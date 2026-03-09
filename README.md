@@ -16,6 +16,7 @@ An HTTP server built in TypeScript with Express.js. This project is part of the 
 
 ## Features
 
+- **Static Fileserver** – Serves `index.html` and static assets from project root at `http://localhost:8080`
 - **Servers** – Basic web server setup
 - **Routing** – HTTP routing with Express
 - **Architecture** – Structured server design
@@ -56,7 +57,7 @@ npm start
 npm run dev
 ```
 
-The server runs on port 8080 by default.
+The server runs on port 8080 by default and serves `index.html` at `/`.
 
 ---
 
