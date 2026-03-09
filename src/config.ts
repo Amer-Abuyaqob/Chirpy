@@ -6,3 +6,10 @@
 export type APIConfig = {
   fileserverHits: number;
 };
+
+/**
+ * In-memory API metrics state used while the server is running.
+ */
+export const config: APIConfig = {
+  fileserverHits: 0,
+};
