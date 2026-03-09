@@ -1,6 +1,9 @@
 import express from "express";
 import { handlerMetrics } from "./api/metrics.js";
-import { middlewareMetricsInc } from "./api/middleware.js";
+import {
+  middlewareLogResponses,
+  middlewareMetricsInc,
+} from "./api/middleware.js";
 import { handlerReadiness } from "./api/readiness.js";
 import { handlerReset } from "./api/reset.js";
 
@@ -14,6 +17,7 @@ const APP_STATIC_DIR = "./src/app";
  */
 export function createApp(): express.Express {
   const app = express();
+  app.use(middlewareLogResponses);
   registerStaticAssets(app);
   registerReadinessEndpoint(app);
   registerMetricsEndpoint(app);

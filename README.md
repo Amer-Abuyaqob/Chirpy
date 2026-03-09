@@ -19,6 +19,7 @@ An HTTP server built in TypeScript with Express.js. This project is part of the 
 - **Static Fileserver** – Serves `index.html` and static assets from `./src/app` at `http://localhost:8080/app`
 - **API Metrics** – Hit counter for `/app` requests; `GET /metrics` returns `Hits: x`, `GET /reset` resets the counter
 - **Readiness Endpoint** – `GET /healthz` returns `OK` for health checks
+- **Response Logging** – Middleware logs non-OK responses (4xx, 5xx) as `[NON-OK] <method> <url> - Status: <code>`
 - **Servers** – Basic web server setup
 - **Routing** – HTTP routing with Express
 - **Architecture** – Structured server design
