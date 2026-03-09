@@ -41,8 +41,8 @@ An HTTP server built in TypeScript with Express.js. This project is part of the 
 
 ```bash
 # Clone the repo
-git clone <repo-url>
-cd Simple-Http-Server
+git clone https://github.com/Amer-Abuyaqob/Chirpy.git
+cd Chirpy
 
 # Install dependencies
 npm install
