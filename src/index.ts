@@ -1,4 +1,5 @@
 import express from "express";
+import { middlewareMetricsInc } from "./api/middleware.js";
 import { handlerReadiness } from "./api/readiness.js";
 
 const PORT = 8080;
@@ -23,6 +24,7 @@ export function createApp(): express.Express {
  * @returns void
  */
 function registerStaticAssets(app: express.Express): void {
+  app.use("/app", middlewareMetricsInc);
   app.use("/app", express.static(APP_STATIC_DIR));
 }
 
