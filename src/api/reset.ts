@@ -10,7 +10,7 @@ import { setPlainTextUtf8Header } from "./headers.js";
  * @param next - Callback to pass control to the next middleware/handler
  * @returns void
  */
-export function middlewareMetricsReset(
+export function handlerReset(
   _req: Request,
   res: Response,
   next: NextFunction,
