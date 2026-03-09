@@ -8,6 +8,25 @@ import type { Request, Response } from "express";
  * @returns void
  */
 export function handlerReadiness(_req: Request, res: Response): void {
+  // #region agent log
+  fetch("http://127.0.0.1:7249/ingest/b8ac420f-e1c6-4e93-8de6-ed12c7acddb8", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "4c5375",
+    },
+    body: JSON.stringify({
+      sessionId: "4c5375",
+      runId: "initial",
+      hypothesisId: "H4",
+      location: "src/app/api/readiness.ts:10",
+      message: "handlerReadiness invoked",
+      data: {},
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+
   setPlainTextUtf8Header(res);
   res.send("OK");
 }
