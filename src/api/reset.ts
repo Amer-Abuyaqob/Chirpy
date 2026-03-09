@@ -18,5 +18,4 @@ export function middlewareMetricsReset(
   config.fileserverHits = 0;
   setPlainTextUtf8Header(res);
   res.send("OK: File server hits been reset successfully");
-  next();
 }
