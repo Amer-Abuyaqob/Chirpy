@@ -1,6 +1,11 @@
 import express from "express";
-import { middlewareLogResponses } from "./api/middleware.js";
+import { handlerMetrics } from "./api/metrics.js";
+import {
+  middlewareLogResponses,
+  middlewareMetricsInc,
+} from "./api/middleware.js";
 import { handlerReadiness } from "./api/readiness.js";
+import { handlerReset } from "./api/reset.js";
 
 const PORT = 8080;
 const APP_STATIC_DIR = "./src/app";
@@ -15,6 +20,8 @@ export function createApp(): express.Express {
   app.use(middlewareLogResponses);
   registerStaticAssets(app);
   registerReadinessEndpoint(app);
+  registerMetricsEndpoint(app);
+  registerResetEndpoint(app);
   return app;
 }
 
@@ -25,6 +32,7 @@ export function createApp(): express.Express {
  * @returns void
  */
 function registerStaticAssets(app: express.Express): void {
+  app.use("/app", middlewareMetricsInc);
   app.use("/app", express.static(APP_STATIC_DIR));
 }
 
@@ -36,6 +44,26 @@ function registerStaticAssets(app: express.Express): void {
  */
 function registerReadinessEndpoint(app: express.Express): void {
   app.get("/healthz", handlerReadiness);
+}
+
+/**
+ * Registers the metrics endpoint.
+ *
+ * @param app - Express application instance.
+ * @returns void
+ */
+function registerMetricsEndpoint(app: express.Express): void {
+  app.get("/metrics", handlerMetrics);
+}
+
+/**
+ * Registers the reset endpoint.
+ *
+ * @param app - Express application instance.
+ * @returns void
+ */
+function registerResetEndpoint(app: express.Express): void {
+  app.get("/reset", handlerReset);
 }
 
 /**
