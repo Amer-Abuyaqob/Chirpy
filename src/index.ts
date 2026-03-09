@@ -1,4 +1,5 @@
 import express from "express";
+import { middlewareLogResponses } from "./api/middleware.js";
 import { handlerReadiness } from "./api/readiness.js";
 
 const PORT = 8080;
@@ -11,6 +12,7 @@ const APP_STATIC_DIR = "./src/app";
  */
 export function createApp(): express.Express {
   const app = express();
+  app.use(middlewareLogResponses);
   registerStaticAssets(app);
   registerReadinessEndpoint(app);
   return app;
