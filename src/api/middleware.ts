@@ -13,6 +13,8 @@ export function middlewareLogResponses(
   res: Response,
   next: NextFunction,
 ): void {
-  // TODO: Add logging logic.
+  res.on("finish", () => {
+    // TODO: Add logging logic.
+  });
   next();
 }
