@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { config } from "../config.js";
+import { setPlainTextUtf8Header } from "./headers.js";
 
 /**
  * Responds with the current file server hit count as plain text.
@@ -9,6 +10,6 @@ import { config } from "../config.js";
  * @returns void
  */
 export function handlerMetrics(_req: Request, res: Response): void {
-  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  setPlainTextUtf8Header(res);
   res.send(`Hits: ${config.fileserverHits}`);
 }
