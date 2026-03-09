@@ -14,7 +14,10 @@ export function middlewareLogResponses(
   next: NextFunction,
 ): void {
   res.on("finish", () => {
-    // TODO: Add logging logic.
+    const status = res.statusCode;
+    if (status >= 400) {
+      console.log(`[NON-OK] ${req.method} ${req.url} - Status: ${status}`);
+    }
   });
   next();
 }
