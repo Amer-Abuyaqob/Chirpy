@@ -1,4 +1,5 @@
 import express from "express";
+import { handlerMetrics } from "./api/metrics.js";
 import { middlewareMetricsInc } from "./api/middleware.js";
 import { handlerReadiness } from "./api/readiness.js";
 
@@ -14,6 +15,7 @@ export function createApp(): express.Express {
   const app = express();
   registerStaticAssets(app);
   registerReadinessEndpoint(app);
+  registerMetricsEndpoint(app);
   return app;
 }
 
@@ -36,6 +38,16 @@ function registerStaticAssets(app: express.Express): void {
  */
 function registerReadinessEndpoint(app: express.Express): void {
   app.get("/healthz", handlerReadiness);
+}
+
+/**
+ * Registers the metrics endpoint.
+ *
+ * @param app - Express application instance.
+ * @returns void
+ */
+function registerMetricsEndpoint(app: express.Express): void {
+  app.get("/metrics", handlerMetrics);
 }
 
 /**
