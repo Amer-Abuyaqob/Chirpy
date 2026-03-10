@@ -66,7 +66,7 @@ function registerMetricsEndpoint(app: express.Express): void {
  * @returns void
  */
 function registerResetEndpoint(app: express.Express): void {
-  app.get(`${ADMIN_PREFIX}/reset`, handlerReset);
+  app.post(`${ADMIN_PREFIX}/reset`, handlerReset);
 }
 
 /**
@@ -79,7 +79,7 @@ export function main(): void {
 
   app.listen(PORT, () => {
     // TODO: Replace console.log with a structured logger when logging is centralized.
-    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`Server is running at http://localhost:${PORT}/app`);
   });
 }
 
