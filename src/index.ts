@@ -11,6 +11,7 @@ const PORT = 8080;
 const APP_STATIC_DIR = "./src/app";
 const APP_ROUTE = "/app";
 const API_PREFIX = "/api";
+const ADMIN_PREFIX = "/admin";
 
 /**
  * Creates and configures an Express application instance.
@@ -55,7 +56,7 @@ function registerReadinessEndpoint(app: express.Express): void {
  * @returns void
  */
 function registerMetricsEndpoint(app: express.Express): void {
-  app.get(`${API_PREFIX}/metrics`, handlerMetrics);
+  app.get(`${ADMIN_PREFIX}/metrics`, handlerMetrics);
 }
 
 /**
@@ -65,7 +66,7 @@ function registerMetricsEndpoint(app: express.Express): void {
  * @returns void
  */
 function registerResetEndpoint(app: express.Express): void {
-  app.get(`${API_PREFIX}/reset`, handlerReset);
+  app.get(`${ADMIN_PREFIX}/reset`, handlerReset);
 }
 
 /**
