@@ -9,6 +9,8 @@ import { handlerReset } from "./api/reset.js";
 
 const PORT = 8080;
 const APP_STATIC_DIR = "./src/app";
+const APP_ROUTE = "/app";
+const API_PREFIX = "/api";
 
 /**
  * Creates and configures an Express application instance.
@@ -32,8 +34,8 @@ export function createApp(): express.Express {
  * @returns void
  */
 function registerStaticAssets(app: express.Express): void {
-  app.use("/app", middlewareMetricsInc);
-  app.use("/app", express.static(APP_STATIC_DIR));
+  app.use(APP_ROUTE, middlewareMetricsInc);
+  app.use(APP_ROUTE, express.static(APP_STATIC_DIR));
 }
 
 /**
@@ -43,7 +45,7 @@ function registerStaticAssets(app: express.Express): void {
  * @returns void
  */
 function registerReadinessEndpoint(app: express.Express): void {
-  app.get("/healthz", handlerReadiness);
+  app.get(`${API_PREFIX}/healthz`, handlerReadiness);
 }
 
 /**
@@ -53,7 +55,7 @@ function registerReadinessEndpoint(app: express.Express): void {
  * @returns void
  */
 function registerMetricsEndpoint(app: express.Express): void {
-  app.get("/metrics", handlerMetrics);
+  app.get(`${API_PREFIX}/metrics`, handlerMetrics);
 }
 
 /**
@@ -63,7 +65,7 @@ function registerMetricsEndpoint(app: express.Express): void {
  * @returns void
  */
 function registerResetEndpoint(app: express.Express): void {
-  app.get("/reset", handlerReset);
+  app.get(`${API_PREFIX}/reset`, handlerReset);
 }
 
 /**

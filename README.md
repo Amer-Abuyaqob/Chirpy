@@ -17,8 +17,8 @@ An HTTP server built in TypeScript with Express.js. This project is part of the 
 ## Features
 
 - **Static Fileserver** – Serves `index.html` and static assets from `./src/app` at `http://localhost:8080/app`
-- **API Metrics** – Hit counter for `/app` requests; `GET /metrics` returns `Hits: x`, `GET /reset` resets the counter
-- **Readiness Endpoint** – `GET /healthz` returns `OK` for health checks
+- **API Metrics** – Hit counter for `/app` requests; `GET /api/metrics` returns `Hits: x`, `GET /api/reset` resets the counter
+- **Readiness Endpoint** – `GET /api/healthz` returns `OK` for health checks
 - **Response Logging** – Middleware logs non-OK responses (4xx, 5xx) as `[NON-OK] <method> <url> - Status: <code>`
 - **Servers** – Basic web server setup
 - **Routing** – HTTP routing with Express
@@ -60,7 +60,7 @@ npm start
 npm run dev
 ```
 
-The server runs on port 8080 by default, serves static files at `/app`, exposes a readiness endpoint at `/healthz`, a metrics endpoint at `/metrics`, and a reset endpoint at `/reset`.
+The server runs on port 8080 by default, serves static files at `/app`, exposes a readiness endpoint at `/api/healthz`, a metrics endpoint at `/api/metrics`, and a reset endpoint at `/api/reset`.
 
 ---
 
