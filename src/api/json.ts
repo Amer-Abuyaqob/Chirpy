@@ -49,7 +49,7 @@ export function handlerValidateChirp(req: Request, res: Response): void {
 
   // Enforce 140-character limit
   if (chirpBody.length > MAX_CHIRP_LENGTH) {
-    throw new BadRequestError("Chirp is too long");
+    throw new BadRequestError("Chirp is too long. Max length is 140");
   }
 
   const cleanedBody = cleanProfanity(chirpBody);
