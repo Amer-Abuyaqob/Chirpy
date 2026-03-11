@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { config } from "../config.js";
-import { sendJson } from "./headers.js";
+import { sendJson } from "./json.js";
 import {
   BadRequestError,
   UserNotAuthenticatedError,
@@ -71,7 +71,7 @@ function getClientErrorMessage(err: unknown): string {
  * @param _next - Required by Express error middleware signature (unused).
  * @returns void
  */
-export function middlewareError(
+export function errorMiddleWare(
   err: unknown,
   _req: Request,
   res: Response,
@@ -111,7 +111,7 @@ export function middlewareMetricsInc(
  * @param next - Function to pass control to the next middleware.
  * @returns void
  */
-export function middlewareLogResponses(
+export function middlewareLogResponse(
   req: Request,
   res: Response,
   next: NextFunction,

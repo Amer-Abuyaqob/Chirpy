@@ -1,9 +1,9 @@
 import express from "express";
-import { handlerValidateChirp } from "./api/json.js";
+import { handlerChirpsValidate } from "./api/chirps.js";
 import { handlerMetrics } from "./api/metrics.js";
 import {
-  middlewareError,
-  middlewareLogResponses,
+  errorMiddleWare,
+  middlewareLogResponse,
   middlewareMetricsInc,
 } from "./api/middleware.js";
 import { handlerReadiness } from "./api/readiness.js";
@@ -22,14 +22,14 @@ const ADMIN_PREFIX = "/admin";
  */
 export function createApp(): express.Express {
   const app = express();
-  app.use(middlewareLogResponses);
+  app.use(middlewareLogResponse);
   app.use(express.json());
   registerStaticAssets(app);
   registerReadinessEndpoint(app);
   registerMetricsEndpoint(app);
   registerResetEndpoint(app);
   registerValidateChirpEndpoint(app);
-  app.use(middlewareError);
+  app.use(errorMiddleWare);
   return app;
 }
 
@@ -83,7 +83,7 @@ function registerResetEndpoint(app: express.Express): void {
 function registerValidateChirpEndpoint(app: express.Express): void {
   app.post(`${API_PREFIX}/validate_chirp`, (req, res, next) => {
     Promise.resolve()
-      .then(() => handlerValidateChirp(req, res))
+      .then(() => handlerChirpsValidate(req, res))
       .catch(next);
   });
 }
