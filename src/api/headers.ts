@@ -11,6 +11,16 @@ export function setPlainTextUtf8Header(res: Response): void {
 }
 
 /**
+ * Sets the response headers for JSON UTF-8 encoded responses.
+ *
+ * @param res - HTTP response whose headers will be modified.
+ * @returns void
+ */
+export function setJsonUtf8Header(res: Response): void {
+  res.set("Content-Type", "application/json; charset=utf-8");
+}
+
+/**
  * Sets the response headers for html UTF-8 encoded text.
  *
  * @param res - HTTP response whose headers will be modified.
