@@ -1,4 +1,5 @@
 import express from "express";
+import { handlerValidateChirp } from "./api/json.js";
 import { handlerMetrics } from "./api/metrics.js";
 import {
   middlewareLogResponses,
@@ -25,6 +26,7 @@ export function createApp(): express.Express {
   registerReadinessEndpoint(app);
   registerMetricsEndpoint(app);
   registerResetEndpoint(app);
+  registerValidateChirpEndpoint(app);
   return app;
 }
 
@@ -67,6 +69,16 @@ function registerMetricsEndpoint(app: express.Express): void {
  */
 function registerResetEndpoint(app: express.Express): void {
   app.post(`${ADMIN_PREFIX}/reset`, handlerReset);
+}
+
+/**
+ * Registers the chirp validation endpoint.
+ *
+ * @param app - Express application instance.
+ * @returns void
+ */
+function registerValidateChirpEndpoint(app: express.Express): void {
+  app.post(`${API_PREFIX}/validate_chirp`, handlerValidateChirp);
 }
 
 /**
