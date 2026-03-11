@@ -1,0 +1,59 @@
+import type { Request, Response } from "express";
+import { sendJson } from "./json.js";
+import { BadRequestError } from "./errors.js";
+
+/** Maximum allowed chirp length (in characters). */
+const MAX_CHIRP_LENGTH = 140;
+
+/** List of profane words that must be masked in chirps. */
+const PROFANE_WORDS = ["kerfuffle", "sharbert", "fornax"];
+
+/**
+ * Replaces any profane words in a chirp with asterisks.
+ *
+ * @param chirpBody - Original chirp body text.
+ * @returns Cleaned chirp body with profane words replaced by "****".
+ */
+function cleanProfanity(chirpBody: string): string {
+  return chirpBody
+    .split(" ")
+    .map((word) => {
+      const lowerWord = word.toLowerCase();
+      if (PROFANE_WORDS.includes(lowerWord)) {
+        return "****";
+      }
+
+      return word;
+    })
+    .join(" ");
+}
+
+/**
+ * Handles POST /api/validate_chirp: validates a chirp from the JSON body.
+ *
+ * @param req - Express request (expects JSON body with a "body" field).
+ * @param res - Express response.
+ * @returns void
+ * @throws {BadRequestError} When the chirp exceeds the maximum allowed length.
+ */
+export function handlerChirpsValidate(req: Request, res: Response): void {
+  // Express JSON middleware has already parsed req.body
+  const parsed = req.body as { body?: unknown } | undefined;
+
+  // Ensure chirp body exists and is a string
+  const chirpBody = parsed?.body;
+  if (typeof chirpBody !== "string") {
+    sendJson(res, 400, { error: "Something went wrong" });
+    return;
+  }
+
+  // Enforce 140-character limit
+  if (chirpBody.length > MAX_CHIRP_LENGTH) {
+    throw new BadRequestError("Chirp is too long. Max length is 140");
+  }
+
+  const cleanedBody = cleanProfanity(chirpBody);
+
+  // Chirp passes validation
+  sendJson(res, 200, { cleanedBody });
+}
