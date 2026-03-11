@@ -4,6 +4,29 @@ import { setJsonUtf8Header } from "./headers.js";
 /** Maximum allowed chirp length (in characters). */
 const MAX_CHIRP_LENGTH = 140;
 
+/** List of profane words that must be masked in chirps. */
+const PROFANE_WORDS = ["kerfuffle", "sharbert", "fornax"];
+
+/**
+ * Replaces any profane words in a chirp with asterisks.
+ *
+ * @param chirpBody - Original chirp body text.
+ * @returns Cleaned chirp body with profane words replaced by "****".
+ */
+function cleanProfanity(chirpBody: string): string {
+  return chirpBody
+    .split(" ")
+    .map((word) => {
+      const lowerWord = word.toLowerCase();
+      if (PROFANE_WORDS.includes(lowerWord)) {
+        return "****";
+      }
+
+      return word;
+    })
+    .join(" ");
+}
+
 /**
  * Sends a JSON response with the proper Content-Type.
  *
@@ -41,6 +64,8 @@ export function handlerValidateChirp(req: Request, res: Response): void {
     return;
   }
 
+  const cleanedBody = cleanProfanity(chirpBody);
+  
   // Chirp passes validation
-  sendJson(res, 200, { valid: true });
+  sendJson(res, 200, { cleanedBody });
 }
