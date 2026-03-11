@@ -81,7 +81,11 @@ function registerResetEndpoint(app: express.Express): void {
  * @returns void
  */
 function registerValidateChirpEndpoint(app: express.Express): void {
-  app.post(`${API_PREFIX}/validate_chirp`, handlerValidateChirp);
+  app.post(`${API_PREFIX}/validate_chirp`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerValidateChirp(req, res))
+      .catch(next);
+  });
 }
 
 /**
