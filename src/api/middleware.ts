@@ -80,8 +80,9 @@ export function middlewareError(
   const status = getStatusOfError(err);
   const clientMessage = getClientErrorMessage(err);
   const logMessage = getErrorMessage(err);
-
-  console.error("Error:", logMessage);
+  if (status >= 500) {
+    console.error("Error:", logMessage);
+  }
   sendJson(res, status, { error: clientMessage });
 }
 
