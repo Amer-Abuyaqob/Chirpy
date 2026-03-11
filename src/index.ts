@@ -22,6 +22,7 @@ const ADMIN_PREFIX = "/admin";
 export function createApp(): express.Express {
   const app = express();
   app.use(middlewareLogResponses);
+  app.use(express.json());
   registerStaticAssets(app);
   registerReadinessEndpoint(app);
   registerMetricsEndpoint(app);
