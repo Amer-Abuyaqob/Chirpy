@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { config } from "../config.js";
-import { sendJson } from "./json.js";
+import { respondWithError, respondWithJSON } from "./json.js";
 import {
   BadRequestError,
   UserNotAuthenticatedError,
@@ -63,7 +63,12 @@ function getClientErrorMessage(err: unknown): string {
 }
 
 /**
- * Express error-handling middleware. Logs errors and sends a 500 JSON response.
+ * Express error-handling middleware. Maps custom errors to appropriate status
+ * codes, logs 5xx errors, and sends a JSON error response.
+ *
+ * Custom errors: BadRequestError→400, UserNotAuthenticatedError→401,
+ * UserForbiddenError→403, NotFoundError→404. Unknown errors→500.
+ * Client message is the error's message for custom errors; otherwise generic.
  *
  * @param err - Caught error passed by Express.
  * @param _req - Express request (unused).
@@ -83,7 +88,7 @@ export function errorMiddleWare(
   if (status >= 500) {
     console.error("Error:", logMessage);
   }
-  sendJson(res, status, { error: clientMessage });
+  respondWithError(res, status, clientMessage);
 }
 
 /**
