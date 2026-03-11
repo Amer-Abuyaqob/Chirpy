@@ -1,6 +1,34 @@
 import { Request, Response, NextFunction } from "express";
 import { config } from "../config.js";
 import { sendJson } from "./headers.js";
+import {
+  BadRequestError,
+  UserNotAuthenticatedError,
+  UserForbiddenError,
+  NotFoundError,
+} from "./errors.js";
+
+/**
+ * Determines the appropriate HTTP status code for a given error.
+ *
+ * @param err - Error instance thrown by route handlers or middleware.
+ * @returns HTTP status code corresponding to the error type.
+ */
+function getStatusOfError(err: unknown): number {
+  if (err instanceof BadRequestError) {
+    return 400;
+  }
+  if (err instanceof UserNotAuthenticatedError) {
+    return 401;
+  }
+  if (err instanceof UserForbiddenError) {
+    return 403;
+  }
+  if (err instanceof NotFoundError) {
+    return 404;
+  }
+  return 500;
+}
 
 /**
  * Extracts a safe error message from an unknown value.
@@ -10,6 +38,28 @@ import { sendJson } from "./headers.js";
  */
 function getErrorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
+}
+
+/**
+ * Extracts the client-facing error message based on error type.
+ *
+ * For known custom errors, the original message is returned. For all other
+ * errors, a generic message is used so that internal details are not exposed.
+ *
+ * @param err - Error instance thrown by route handlers or middleware.
+ * @returns Message string that is safe to send to clients.
+ */
+function getClientErrorMessage(err: unknown): string {
+  if (
+    err instanceof BadRequestError ||
+    err instanceof UserNotAuthenticatedError ||
+    err instanceof UserForbiddenError ||
+    err instanceof NotFoundError
+  ) {
+    return err.message;
+  }
+
+  return "Something went wrong on our end";
 }
 
 /**
@@ -27,9 +77,12 @@ export function middlewareError(
   res: Response,
   _next: NextFunction,
 ): void {
-  const message = getErrorMessage(err);
-  console.error("Error:", message);
-  sendJson(res, 500, { error: "Something went wrong on our end" });
+  const status = getStatusOfError(err);
+  const clientMessage = getClientErrorMessage(err);
+  const logMessage = getErrorMessage(err);
+
+  console.error("Error:", logMessage);
+  sendJson(res, status, { error: clientMessage });
 }
 
 /**
