@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { sendJson } from "./headers.js";
+import { BadRequestError } from "./errors.js";
 
 /** Maximum allowed chirp length (in characters). */
 const MAX_CHIRP_LENGTH = 140;
@@ -33,6 +34,7 @@ function cleanProfanity(chirpBody: string): string {
  * @param req - Express request (expects JSON body with a "body" field).
  * @param res - Express response.
  * @returns void
+ * @throws {BadRequestError} When the chirp exceeds the maximum allowed length.
  */
 export function handlerValidateChirp(req: Request, res: Response): void {
   // Express JSON middleware has already parsed req.body
@@ -47,7 +49,7 @@ export function handlerValidateChirp(req: Request, res: Response): void {
 
   // Enforce 140-character limit
   if (chirpBody.length > MAX_CHIRP_LENGTH) {
-    throw new Error("Chirp is too long");
+    throw new BadRequestError("Chirp is too long");
   }
 
   const cleanedBody = cleanProfanity(chirpBody);
