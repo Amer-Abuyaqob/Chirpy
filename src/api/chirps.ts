@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { sendJson } from "./json.js";
+import { respondWithJSON } from "./json.js";
 import { BadRequestError } from "./errors.js";
 
 /** Maximum allowed chirp length (in characters). */
@@ -43,7 +43,8 @@ export function handlerChirpsValidate(req: Request, res: Response): void {
   // Ensure chirp body exists and is a string
   const chirpBody = parsed?.body;
   if (typeof chirpBody !== "string") {
-    sendJson(res, 400, { error: "Something went wrong" });
+    // TODO: change to throw new BadRequestError("") with a proper error message
+    respondWithJSON(res, 400, { error: "Something went wrong" });
     return;
   }
 
@@ -55,5 +56,5 @@ export function handlerChirpsValidate(req: Request, res: Response): void {
   const cleanedBody = cleanProfanity(chirpBody);
 
   // Chirp passes validation
-  sendJson(res, 200, { cleanedBody });
+  respondWithJSON(res, 200, { cleanedBody });
 }
