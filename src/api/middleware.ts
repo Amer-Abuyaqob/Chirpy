@@ -1,6 +1,34 @@
 import { Request, Response, NextFunction } from "express";
 import { config } from "../config.js";
-import { sendJson } from "./headers.js";
+import { respondWithError } from "./json.js";
+import {
+  BadRequestError,
+  UserNotAuthenticatedError,
+  UserForbiddenError,
+  NotFoundError,
+} from "./errors.js";
+
+/**
+ * Determines the appropriate HTTP status code for a given error.
+ *
+ * @param err - Error instance thrown by route handlers or middleware.
+ * @returns HTTP status code corresponding to the error type.
+ */
+function getStatusOfError(err: unknown): number {
+  if (err instanceof BadRequestError) {
+    return 400;
+  }
+  if (err instanceof UserNotAuthenticatedError) {
+    return 401;
+  }
+  if (err instanceof UserForbiddenError) {
+    return 403;
+  }
+  if (err instanceof NotFoundError) {
+    return 404;
+  }
+  return 500;
+}
 
 /**
  * Extracts a safe error message from an unknown value.
@@ -13,7 +41,34 @@ function getErrorMessage(err: unknown): string {
 }
 
 /**
- * Express error-handling middleware. Logs errors and sends a 500 JSON response.
+ * Extracts the client-facing error message based on error type.
+ *
+ * For known custom errors, the original message is returned. For all other
+ * errors, a generic message is used so that internal details are not exposed.
+ *
+ * @param err - Error instance thrown by route handlers or middleware.
+ * @returns Message string that is safe to send to clients.
+ */
+function getClientErrorMessage(err: unknown): string {
+  if (
+    err instanceof BadRequestError ||
+    err instanceof UserNotAuthenticatedError ||
+    err instanceof UserForbiddenError ||
+    err instanceof NotFoundError
+  ) {
+    return err.message;
+  }
+
+  return "Something went wrong on our end";
+}
+
+/**
+ * Express error-handling middleware. Maps custom errors to appropriate status
+ * codes, logs 5xx errors, and sends a JSON error response.
+ *
+ * Custom errors: BadRequestError→400, UserNotAuthenticatedError→401,
+ * UserForbiddenError→403, NotFoundError→404. Unknown errors→500.
+ * Client message is the error's message for custom errors; otherwise generic.
  *
  * @param err - Caught error passed by Express.
  * @param _req - Express request (unused).
@@ -21,15 +76,19 @@ function getErrorMessage(err: unknown): string {
  * @param _next - Required by Express error middleware signature (unused).
  * @returns void
  */
-export function middlewareError(
+export function errorMiddleWare(
   err: unknown,
   _req: Request,
   res: Response,
   _next: NextFunction,
 ): void {
-  const message = getErrorMessage(err);
-  console.error("Error:", message);
-  sendJson(res, 500, { error: "Something went wrong on our end" });
+  const status = getStatusOfError(err);
+  const clientMessage = getClientErrorMessage(err);
+  const logMessage = getErrorMessage(err);
+  if (status >= 500) {
+    console.error("Error:", logMessage);
+  }
+  respondWithError(res, status, clientMessage);
 }
 
 /**
@@ -57,7 +116,7 @@ export function middlewareMetricsInc(
  * @param next - Function to pass control to the next middleware.
  * @returns void
  */
-export function middlewareLogResponses(
+export function middlewareLogResponse(
   req: Request,
   res: Response,
   next: NextFunction,
