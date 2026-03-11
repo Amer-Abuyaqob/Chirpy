@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { setJsonUtf8Header } from "./headers.js";
+import { sendJson } from "./headers.js";
 
 /** Maximum allowed chirp length (in characters). */
 const MAX_CHIRP_LENGTH = 140;
@@ -28,19 +28,6 @@ function cleanProfanity(chirpBody: string): string {
 }
 
 /**
- * Sends a JSON response with the proper Content-Type.
- *
- * @param res - Express response.
- * @param status - HTTP status code.
- * @param payload - Object to serialize as JSON.
- * @returns void
- */
-function sendJson(res: Response, status: number, payload: object): void {
-  setJsonUtf8Header(res);
-  res.status(status).send(JSON.stringify(payload));
-}
-
-/**
  * Handles POST /api/validate_chirp: validates a chirp from the JSON body.
  *
  * @param req - Express request (expects JSON body with a "body" field).
@@ -60,12 +47,11 @@ export function handlerValidateChirp(req: Request, res: Response): void {
 
   // Enforce 140-character limit
   if (chirpBody.length > MAX_CHIRP_LENGTH) {
-    sendJson(res, 400, { error: "Chirp is too long" });
-    return;
+    throw new Error("Chirp is too long");
   }
 
   const cleanedBody = cleanProfanity(chirpBody);
-  
+
   // Chirp passes validation
   sendJson(res, 200, { cleanedBody });
 }

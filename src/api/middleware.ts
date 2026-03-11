@@ -1,5 +1,36 @@
 import { Request, Response, NextFunction } from "express";
 import { config } from "../config.js";
+import { sendJson } from "./headers.js";
+
+/**
+ * Extracts a safe error message from an unknown value.
+ *
+ * @param err - Caught error (may be Error or any value).
+ * @returns Human-readable message string.
+ */
+function getErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+/**
+ * Express error-handling middleware. Logs errors and sends a 500 JSON response.
+ *
+ * @param err - Caught error passed by Express.
+ * @param _req - Express request (unused).
+ * @param res - HTTP response.
+ * @param _next - Required by Express error middleware signature (unused).
+ * @returns void
+ */
+export function middlewareError(
+  err: unknown,
+  _req: Request,
+  res: Response,
+  _next: NextFunction,
+): void {
+  const message = getErrorMessage(err);
+  console.error("Error:", message);
+  sendJson(res, 500, { error: "Something went wrong on our end" });
+}
 
 /**
  * Increments the file server hit counter for each request, then passes to next handler.
