@@ -2,6 +2,7 @@ import express from "express";
 import { handlerValidateChirp } from "./api/json.js";
 import { handlerMetrics } from "./api/metrics.js";
 import {
+  middlewareError,
   middlewareLogResponses,
   middlewareMetricsInc,
 } from "./api/middleware.js";
@@ -28,6 +29,7 @@ export function createApp(): express.Express {
   registerMetricsEndpoint(app);
   registerResetEndpoint(app);
   registerValidateChirpEndpoint(app);
+  app.use(middlewareError);
   return app;
 }
 
