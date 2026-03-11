@@ -38,24 +38,24 @@ export function handlerValidateChirp(req: Request, res: Response): void {
     try {
       parsed = JSON.parse(body) as { body?: unknown };
     } catch {
-      sendJson(res, 400, { ok: false, error: "invalid JSON" });
+      sendJson(res, 400, { error: "Something went wrong" });
       return;
     }
 
     // Ensure chirp body exists and is a string
     const chirpBody = parsed?.body;
     if (typeof chirpBody !== "string") {
-      sendJson(res, 400, { ok: false, error: "missing or invalid body" });
+      sendJson(res, 400, { error: "Something went wrong" });
       return;
     }
 
     // Enforce 140-character limit
     if (chirpBody.length > MAX_CHIRP_LENGTH) {
-      sendJson(res, 400, { ok: false, error: "chirp too long" });
+      sendJson(res, 400, { error: "Chirp is too long" });
       return;
     }
 
     // Chirp passes validation
-    sendJson(res, 200, { ok: true });
+    sendJson(res, 200, { valid: true });
   });
 }
