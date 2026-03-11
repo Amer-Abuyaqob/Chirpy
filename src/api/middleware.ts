@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { config } from "../config.js";
-import { respondWithError, respondWithJSON } from "./json.js";
+import { respondWithError } from "./json.js";
 import {
   BadRequestError,
   UserNotAuthenticatedError,
