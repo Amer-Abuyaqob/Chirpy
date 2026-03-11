@@ -29,3 +29,16 @@ export function setJsonUtf8Header(res: Response): void {
 export function setHTMLTextUtf8Header(res: Response): void {
   res.set("Content-Type", "text/html; charset=utf-8");
 }
+
+/**
+ * Sends a JSON response with the proper Content-Type.
+ *
+ * @param res - Express response.
+ * @param status - HTTP status code.
+ * @param payload - Object to serialize as JSON.
+ * @returns void
+ */
+export function sendJson(res: Response, status: number, payload: object): void {
+  setJsonUtf8Header(res);
+  res.status(status).send(JSON.stringify(payload));
+}
