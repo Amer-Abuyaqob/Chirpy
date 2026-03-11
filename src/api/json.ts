@@ -18,44 +18,29 @@ function sendJson(res: Response, status: number, payload: object): void {
 }
 
 /**
- * Handles POST /api/validate_chirp: accumulates body, parses JSON, validates chirp.
+ * Handles POST /api/validate_chirp: validates a chirp from the JSON body.
  *
  * @param req - Express request (expects JSON body with a "body" field).
  * @param res - Express response.
  * @returns void
  */
 export function handlerValidateChirp(req: Request, res: Response): void {
-  let body = "";
+  // Express JSON middleware has already parsed req.body
+  const parsed = req.body as { body?: unknown } | undefined;
 
-  // Append each chunk to the body buffer until stream finishes
-  req.on("data", (chunk: Buffer | string) => {
-    body += chunk.toString();
-  });
+  // Ensure chirp body exists and is a string
+  const chirpBody = parsed?.body;
+  if (typeof chirpBody !== "string") {
+    sendJson(res, 400, { error: "Something went wrong" });
+    return;
+  }
 
-  req.on("end", () => {
-    // Parse accumulated body as JSON; reject malformed input
-    let parsed: { body?: unknown };
-    try {
-      parsed = JSON.parse(body) as { body?: unknown };
-    } catch {
-      sendJson(res, 400, { error: "Something went wrong" });
-      return;
-    }
+  // Enforce 140-character limit
+  if (chirpBody.length > MAX_CHIRP_LENGTH) {
+    sendJson(res, 400, { error: "Chirp is too long" });
+    return;
+  }
 
-    // Ensure chirp body exists and is a string
-    const chirpBody = parsed?.body;
-    if (typeof chirpBody !== "string") {
-      sendJson(res, 400, { error: "Something went wrong" });
-      return;
-    }
-
-    // Enforce 140-character limit
-    if (chirpBody.length > MAX_CHIRP_LENGTH) {
-      sendJson(res, 400, { error: "Chirp is too long" });
-      return;
-    }
-
-    // Chirp passes validation
-    sendJson(res, 200, { valid: true });
-  });
+  // Chirp passes validation
+  sendJson(res, 200, { valid: true });
 }
