@@ -1,6 +1,21 @@
+import type { MigrationConfig } from "drizzle-orm/migrator";
+
 process.loadEnvFile();
 
-import type { MigrationConfig } from "drizzle-orm/migrator";
+/**
+ * Reads an environment variable and throws if it is missing or empty.
+ *
+ * @param key - Name of the environment variable (e.g. "DB_URL").
+ * @returns The variable's value.
+ * @throws {Error} When the variable is not set or is an empty string.
+ */
+function envOrThrow(key: string): string {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`Environment variable ${key} is not set`);
+  }
+  return value;
+}
 
 /**
  * Database configuration.
@@ -44,7 +59,7 @@ export const config: Config = {
     port: 8080,
   },
   db: {
-    url: process.env.DB_URL ?? "",
+    url: envOrThrow("DB_URL"),
     migrationConfig: {
       migrationsFolder: "./drizzle",
     },
