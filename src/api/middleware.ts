@@ -104,7 +104,7 @@ export function middlewareMetricsInc(
   _res: Response,
   next: NextFunction,
 ): void {
-  config.fileserverHits += 1;
+  config.api.fileServerHits += 1;
   next();
 }
 
