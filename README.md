@@ -19,9 +19,10 @@ An HTTP server built in TypeScript with Express.js. This project is part of the 
 - **Static Fileserver** – Serves `index.html` and static assets from `./src/app` at `http://localhost:8080/app`
 - **API Metrics** – Hit counter for `/app` requests; `GET /admin/metrics` returns HTML with visit count, `POST /admin/reset` resets the counter
 - **Readiness Endpoint** – `GET /api/healthz` returns `OK` for health checks
+- **Users API** – `POST /api/users` accepts JSON `{ "email": "<string>" }`, creates user; returns 201 with id, email, timestamps; invalid email → 400, duplicate email → 409
 - **Chirps API** – `POST /api/chirps` accepts JSON `{ "body": "<chirp text>", "userId": "<user uuid>" }`, validates body (max 140 chars, profanity cleaned), ensures user exists, creates chirp; returns 201 with created chirp; invalid body/userId → 400, user not found → 404
 - **Response Logging** – Middleware logs non-OK responses (4xx, 5xx) as `[NON-OK] <method> <url> - Status: <code>`
-- **Error-Handling Middleware** – Catches thrown errors, maps custom errors (`BadRequestError`→400, `UserNotAuthenticatedError`→401, `UserForbiddenError`→403, `NotFoundError`→404) to correct status and `err.message`; unknown errors→500 with generic message; logs only 5xx to stderr
+- **Error-Handling Middleware** – Catches thrown errors, maps custom errors (`BadRequestError`→400, `UserNotAuthenticatedError`→401, `UserForbiddenError`→403, `NotFoundError`→404, `ConflictError`→409) to correct status and `err.message`; unknown errors→500 with generic message; logs only 5xx to stderr
 - **Servers** – Basic web server setup
 - **Routing** – HTTP routing with Express
 - **Architecture** – Structured server design
@@ -66,9 +67,9 @@ npm run db.generate   # Generate migration from schema changes
 npm run db.migrate    # Apply migrations via drizzle-kit
 ```
 
-**Environment variables:** `DB_URL` (PostgreSQL connection string) and `PORT` (HTTP port) are required. Set them in `.env` or your environment.
+**Environment variables:** `DB_URL` (PostgreSQL connection string), `PORT` (HTTP port), and `PLATFORM` (e.g. `dev` for local; required for reset to run) are required. Set them in `.env` or your environment.
 
-The server runs migrations at startup, then listens on `PORT`, serves static files at `/app`, exposes readiness at `GET /api/healthz`, metrics at `GET /admin/metrics`, reset at `POST /admin/reset`, and chirps at `POST /api/chirps`.
+The server runs migrations at startup, then listens on `PORT`, serves static files at `/app`, exposes readiness at `GET /api/healthz`, metrics at `GET /admin/metrics`, reset at `POST /admin/reset`, users at `POST /api/users`, and chirps at `POST /api/chirps`.
 
 ---
 
