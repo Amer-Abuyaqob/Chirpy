@@ -9,8 +9,8 @@ An HTTP server built in TypeScript with Express.js. This project is part of the 
 - **TypeScript** – Type-safe JavaScript
 - **Node.js** – Runtime
 - **Express.js** – Web framework
-- **PostgreSQL** – (Later chapters) Database
-- **Drizzle ORM** – (Later chapters) Type-safe database access
+- **PostgreSQL** – Database
+- **Drizzle ORM** – Type-safe database access and migrations
 
 ---
 
@@ -27,7 +27,7 @@ An HTTP server built in TypeScript with Express.js. This project is part of the 
 - **Architecture** – Structured server design
 - **JSON** – Parsing and sending JSON data
 - **Error Handling** – Error handling in TypeScript servers
-- **Storage** – (Later) PostgreSQL and migrations
+- **Storage** – PostgreSQL with Drizzle ORM; auto-migrations run at startup
 - **Authentication** – (Later) JWT-based auth
 - **Authorization** – (Later) Access control
 - **Webhooks** – (Later) HTTP webhooks
@@ -40,7 +40,7 @@ An HTTP server built in TypeScript with Express.js. This project is part of the 
 ### Prerequisites
 
 - Node.js (see [.nvmrc](.nvmrc) for recommended version)
-- PostgreSQL (for later chapters)
+- PostgreSQL (required; set `DB_URL` and `PORT` in `.env`)
 
 ### Install & run
 
@@ -60,9 +60,15 @@ npm start
 
 # Dev (build + run)
 npm run dev
+
+# DB migrations (CLI; app also runs migrations at startup)
+npm run db.generate   # Generate migration from schema changes
+npm run db.migrate    # Apply migrations via drizzle-kit
 ```
 
-The server runs on port 8080 by default, serves static files at `/app`, exposes a readiness endpoint at `GET /api/healthz`, metrics at `GET /admin/metrics`, a reset endpoint at `POST /admin/reset`, and a chirp validation endpoint at `POST /api/validate_chirp` for validating and cleaning JSON chirps.
+**Environment variables:** `DB_URL` (PostgreSQL connection string) and `PORT` (HTTP port) are required. Set them in `.env` or your environment.
+
+The server runs migrations at startup, then listens on `PORT`, serves static files at `/app`, exposes readiness at `GET /api/healthz`, metrics at `GET /admin/metrics`, reset at `POST /admin/reset`, and chirp validation at `POST /api/validate_chirp`.
 
 ---
 
