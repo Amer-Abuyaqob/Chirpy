@@ -77,10 +77,10 @@ function toChirpResponse(row: {
 }) {
   return {
     id: row.id,
-    body: row.body,
-    userId: row.userId,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+    body: row.body,
+    userId: row.userId,
   };
 }
 
