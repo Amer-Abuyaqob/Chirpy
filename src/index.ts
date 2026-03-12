@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 import { handlerChirpsValidate } from "./api/chirps.js";
+import { handlerUsersCreate } from "./api/users.js";
 import { config } from "./config.js";
 import { handlerMetrics } from "./api/metrics.js";
 import {
@@ -44,6 +45,7 @@ export function createApp(): express.Express {
   registerMetricsEndpoint(app);
   registerResetEndpoint(app);
   registerValidateChirpEndpoint(app);
+  registerUsersEndpoint(app);
   app.use(errorMiddleWare);
   return app;
 }
@@ -86,7 +88,11 @@ function registerMetricsEndpoint(app: express.Express): void {
  * @returns void
  */
 function registerResetEndpoint(app: express.Express): void {
-  app.post(`${ADMIN_PREFIX}/reset`, handlerReset);
+  app.post(`${ADMIN_PREFIX}/reset`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerReset(req, res))
+      .catch(next);
+  });
 }
 
 /**
@@ -99,6 +105,20 @@ function registerValidateChirpEndpoint(app: express.Express): void {
   app.post(`${API_PREFIX}/validate_chirp`, (req, res, next) => {
     Promise.resolve()
       .then(() => handlerChirpsValidate(req, res))
+      .catch(next);
+  });
+}
+
+/**
+ * Registers the users endpoint.
+ *
+ * @param app - Express application instance.
+ * @returns void
+ */
+function registerUsersEndpoint(app: express.Express): void {
+  app.post(`${API_PREFIX}/users`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerUsersCreate(req, res))
       .catch(next);
   });
 }
