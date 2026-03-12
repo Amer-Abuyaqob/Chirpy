@@ -2,7 +2,8 @@ import express from "express";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
-import { handlerChirpsValidate } from "./api/chirps.js";
+import { handlerChirpsCreate } from "./api/chirps.js";
+import { handlerUsersCreate } from "./api/users.js";
 import { config } from "./config.js";
 import { handlerMetrics } from "./api/metrics.js";
 import {
@@ -43,7 +44,8 @@ export function createApp(): express.Express {
   registerReadinessEndpoint(app);
   registerMetricsEndpoint(app);
   registerResetEndpoint(app);
-  registerValidateChirpEndpoint(app);
+  registerChirpsEndpoint(app);
+  registerUsersEndpoint(app);
   app.use(errorMiddleWare);
   return app;
 }
@@ -86,19 +88,37 @@ function registerMetricsEndpoint(app: express.Express): void {
  * @returns void
  */
 function registerResetEndpoint(app: express.Express): void {
-  app.post(`${ADMIN_PREFIX}/reset`, handlerReset);
+  app.post(`${ADMIN_PREFIX}/reset`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerReset(req, res))
+      .catch(next);
+  });
 }
 
 /**
- * Registers the chirp validation endpoint.
+ * Registers the chirps endpoint.
  *
  * @param app - Express application instance.
  * @returns void
  */
-function registerValidateChirpEndpoint(app: express.Express): void {
-  app.post(`${API_PREFIX}/validate_chirp`, (req, res, next) => {
+function registerChirpsEndpoint(app: express.Express): void {
+  app.post(`${API_PREFIX}/chirps`, (req, res, next) => {
     Promise.resolve()
-      .then(() => handlerChirpsValidate(req, res))
+      .then(() => handlerChirpsCreate(req, res))
+      .catch(next);
+  });
+}
+
+/**
+ * Registers the users endpoint.
+ *
+ * @param app - Express application instance.
+ * @returns void
+ */
+function registerUsersEndpoint(app: express.Express): void {
+  app.post(`${API_PREFIX}/users`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerUsersCreate(req, res))
       .catch(next);
   });
 }

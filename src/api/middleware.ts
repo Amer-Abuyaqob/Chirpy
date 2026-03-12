@@ -3,6 +3,7 @@ import { config } from "../config.js";
 import { respondWithError } from "./json.js";
 import {
   BadRequestError,
+  ConflictError,
   UserNotAuthenticatedError,
   UserForbiddenError,
   NotFoundError,
@@ -17,6 +18,9 @@ import {
 function getStatusOfError(err: unknown): number {
   if (err instanceof BadRequestError) {
     return 400;
+  }
+  if (err instanceof ConflictError) {
+    return 409;
   }
   if (err instanceof UserNotAuthenticatedError) {
     return 401;
@@ -52,6 +56,7 @@ function getErrorMessage(err: unknown): string {
 function getClientErrorMessage(err: unknown): string {
   if (
     err instanceof BadRequestError ||
+    err instanceof ConflictError ||
     err instanceof UserNotAuthenticatedError ||
     err instanceof UserForbiddenError ||
     err instanceof NotFoundError
@@ -66,8 +71,9 @@ function getClientErrorMessage(err: unknown): string {
  * Express error-handling middleware. Maps custom errors to appropriate status
  * codes, logs 5xx errors, and sends a JSON error response.
  *
- * Custom errors: BadRequestError→400, UserNotAuthenticatedError→401,
- * UserForbiddenError→403, NotFoundError→404. Unknown errors→500.
+ * Custom errors: BadRequestError→400, ConflictError→409,
+ * UserNotAuthenticatedError→401, UserForbiddenError→403, NotFoundError→404.
+ * Unknown errors→500.
  * Client message is the error's message for custom errors; otherwise generic.
  *
  * @param err - Caught error passed by Express.

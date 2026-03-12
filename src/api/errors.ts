@@ -41,3 +41,14 @@ export class NotFoundError extends Error {
     super(message);
   }
 }
+
+/**
+ * Error thrown when the request conflicts with existing state (HTTP 409).
+ *
+ * @property message - Human-readable error description
+ */
+export class ConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
