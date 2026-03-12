@@ -15,7 +15,7 @@ export function handlerReset(
   res: Response,
   next: NextFunction,
 ): void {
-  config.fileserverHits = 0;
+  config.api.fileServerHits = 0;
   setPlainTextUtf8Header(res);
   res.send("OK: File server hits been reset successfully");
 }

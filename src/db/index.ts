@@ -3,11 +3,7 @@ import postgres from "postgres";
 import { config } from "../config.js";
 import * as schema from "./schema.js";
 
-if (!config.dbURL) {
-  throw new Error("DB_URL environment variable is required");
-}
-
-const conn = postgres(config.dbURL);
+const conn = postgres(config.db.url);
 
 /**
  * Drizzle ORM database instance for running queries against PostgreSQL.

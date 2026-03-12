@@ -1,5 +1,6 @@
 import express from "express";
 import { handlerChirpsValidate } from "./api/chirps.js";
+import { config } from "./config.js";
 import { handlerMetrics } from "./api/metrics.js";
 import {
   errorMiddleWare,
@@ -9,7 +10,6 @@ import {
 import { handlerReadiness } from "./api/readiness.js";
 import { handlerReset } from "./api/reset.js";
 
-const PORT = 8080;
 const APP_STATIC_DIR = "./src/app";
 const APP_ROUTE = "/app";
 const API_PREFIX = "/api";
@@ -96,9 +96,9 @@ function registerValidateChirpEndpoint(app: express.Express): void {
 export function main(): void {
   const app = createApp();
 
-  app.listen(PORT, () => {
+  app.listen(config.api.port, () => {
     // TODO: Replace console.log with a structured logger when logging is centralized.
-    console.log(`Server is running at http://localhost:${PORT}/app`);
+    console.log(`Server is running at http://localhost:${config.api.port}/app`);
   });
 }
 
