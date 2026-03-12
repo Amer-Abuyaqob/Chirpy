@@ -1,5 +1,9 @@
 import type { Request, Response } from "express";
-import { createChirp } from "../db/queries/chirps.js";
+import {
+  createChirp,
+  getChirpById,
+  getAllChirps,
+} from "../db/queries/chirps.js";
 import { getUserById } from "../db/queries/users.js";
 import { BadRequestError, NotFoundError } from "./errors.js";
 import { respondWithJSON } from "./json.js";
@@ -47,19 +51,23 @@ function validateAndCleanChirpBody(body: unknown): string {
 }
 
 /**
- * Validates userId from the request and ensures it's a non-empty string.
+ * Validates an ID value (e.g. userId, chirpId) and ensures it's a non-empty string.
+ * Handles Express params that may be string or string[].
  *
- * @param userId - Raw userId from request.
- * @returns Trimmed userId.
- * @throws {BadRequestError} When userId is missing or not a valid string.
+ * @param id - Raw ID from request (body, params, etc).
+ * @param label - Human-readable label for error messages (e.g. "UserId", "Chirp ID").
+ * @returns Trimmed non-empty ID string.
+ * @throws {BadRequestError} When id is missing or not a valid non-empty string.
  */
-function validateUserId(userId: unknown): string {
-  if (typeof userId !== "string" || userId.trim() === "") {
+function validateId(id: unknown, label: string): string {
+  const raw =
+    typeof id === "string" ? id : Array.isArray(id) ? id[0] : undefined;
+  if (typeof raw !== "string" || raw.trim() === "") {
     throw new BadRequestError(
-      "UserId is required and must be a non-empty string",
+      `${label} is required and must be a non-empty string`,
     );
   }
-  return userId.trim();
+  return raw.trim();
 }
 
 /**
@@ -104,7 +112,7 @@ export async function handlerChirpsCreate(
   const parsed = req.body as { body?: unknown; userId?: unknown } | undefined;
 
   const body = validateAndCleanChirpBody(parsed?.body);
-  const userId = validateUserId(parsed?.userId);
+  const userId = validateId(parsed?.userId, "UserId");
 
   const user = await getUserById(userId);
   if (!user) {
@@ -114,4 +122,42 @@ export async function handlerChirpsCreate(
   const chirp = await createChirp({ body, userId });
   const payload = toChirpResponse(chirp);
   respondWithJSON(res, 201, payload);
+}
+
+/**
+ * Handles GET /api/chirps/:chirpId: returns a single chirp by ID.
+ *
+ * @param req - Express request (chirpId from path params).
+ * @param res - Express response.
+ * @returns Promise that resolves when the response is sent.
+ * @throws {NotFoundError} When the chirp does not exist.
+ */
+export async function handlerChirpsGet(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const chirpId = validateId(req.params.chirpId, "Chirp ID");
+  const chirp = await getChirpById(chirpId);
+  if (!chirp) {
+    throw new NotFoundError("Chirp not found");
+  }
+
+  const payload = toChirpResponse(chirp);
+  respondWithJSON(res, 200, payload);
+}
+
+/**
+ * Handles GET /api/chirps: returns all chirps in ascending order by createdAt.
+ *
+ * @param _req - Express request (unused).
+ * @param res - Express response.
+ * @returns Promise that resolves when the response is sent.
+ */
+export async function handlerChirpsList(
+  _req: Request,
+  res: Response,
+): Promise<void> {
+  const rows = await getAllChirps();
+  const payload = rows.map(toChirpResponse);
+  respondWithJSON(res, 200, payload);
 }
