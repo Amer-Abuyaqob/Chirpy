@@ -32,10 +32,12 @@ export type DBConfig = {
  * API configuration and in-memory metrics state.
  *
  * @property fileServerHits - Number of hits to the file server endpoint.
+ * @property platform - Environment platform (e.g. "dev" for local development).
  * @property port - HTTP server port.
  */
 export type APIConfig = {
   fileServerHits: number;
+  platform: string;
   port: number;
 };
 
@@ -56,6 +58,7 @@ export type Config = {
 export const config: Config = {
   api: {
     fileServerHits: 0,
+    platform: envOrThrow("PLATFORM"),
     port: Number(envOrThrow("PORT")),
   },
   db: {
