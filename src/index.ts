@@ -2,7 +2,11 @@ import express from "express";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
-import { handlerChirpsCreate } from "./api/chirps.js";
+import {
+  handlerChirpsCreate,
+  handlerChirpsGet,
+  handlerChirpsList,
+} from "./api/chirps.js";
 import { handlerUsersCreate } from "./api/users.js";
 import { config } from "./config.js";
 import { handlerMetrics } from "./api/metrics.js";
@@ -102,6 +106,16 @@ function registerResetEndpoint(app: express.Express): void {
  * @returns void
  */
 function registerChirpsEndpoint(app: express.Express): void {
+  app.get(`${API_PREFIX}/chirps/:chirpId`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerChirpsGet(req, res))
+      .catch(next);
+  });
+  app.get(`${API_PREFIX}/chirps`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerChirpsList(req, res))
+      .catch(next);
+  });
   app.post(`${API_PREFIX}/chirps`, (req, res, next) => {
     Promise.resolve()
       .then(() => handlerChirpsCreate(req, res))
