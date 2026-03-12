@@ -1,4 +1,7 @@
 import express from "express";
+import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import postgres from "postgres";
 import { handlerChirpsValidate } from "./api/chirps.js";
 import { config } from "./config.js";
 import { handlerMetrics } from "./api/metrics.js";
@@ -11,6 +14,18 @@ import { handlerReadiness } from "./api/readiness.js";
 import { handlerReset } from "./api/reset.js";
 
 const APP_STATIC_DIR = "./src/app";
+
+/**
+ * Runs pending database migrations before the application starts.
+ *
+ * @returns Promise that resolves when migrations complete.
+ * @throws Propagates any error from the migration process.
+ */
+async function runMigrations(): Promise<void> {
+  const migrationClient = postgres(config.db.url, { max: 1 });
+  await migrate(drizzle(migrationClient), config.db.migrationConfig);
+}
+
 const APP_ROUTE = "/app";
 const API_PREFIX = "/api";
 const ADMIN_PREFIX = "/admin";
@@ -89,11 +104,12 @@ function registerValidateChirpEndpoint(app: express.Express): void {
 }
 
 /**
- * Application entry point that starts the HTTP server.
+ * Application entry point. Runs migrations, then starts the HTTP server.
  *
- * @returns void
+ * @returns Promise that resolves when the server is listening.
  */
-export function main(): void {
+export async function main(): Promise<void> {
+  await runMigrations();
   const app = createApp();
 
   app.listen(config.api.port, () => {
@@ -102,4 +118,8 @@ export function main(): void {
   });
 }
 
-main();
+main().catch((e: unknown) => {
+  const message = e instanceof Error ? e.message : String(e);
+  console.error("Error:", message);
+  process.exit(1);
+});
