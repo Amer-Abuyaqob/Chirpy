@@ -56,7 +56,7 @@ export type Config = {
 export const config: Config = {
   api: {
     fileServerHits: 0,
-    port: 8080,
+    port: Number(envOrThrow("PORT")),
   },
   db: {
     url: envOrThrow("DB_URL"),
