@@ -1,17 +1,25 @@
 import type { Request, Response } from "express";
 import {
   checkPasswordHash,
+  getBearerToken,
   hashPassword,
   makeJWT,
   makeRefreshToken,
+  validateJWT,
 } from "../auth.js";
 import { config } from "../config.js";
 import { createRefreshToken } from "../db/queries/refresh-tokens.js";
-import { createUser, getUserByEmail } from "../db/queries/users.js";
+import {
+  createUser,
+  getUserByEmail,
+  getUserById,
+  updateUserById,
+} from "../db/queries/users.js";
 import type { User } from "../db/schema.js";
 import {
   BadRequestError,
   ConflictError,
+  NotFoundError,
   UserNotAuthenticatedError,
 } from "./errors.js";
 import { respondWithJSON } from "./json.js";
@@ -195,5 +203,73 @@ export async function handlerLogin(req: Request, res: Response): Promise<void> {
     token: accessToken,
     refreshToken,
   };
+  respondWithJSON(res, 200, payload);
+}
+
+/**
+ * Validates the PUT /api/users request body.
+ *
+ * @param body - Raw request body (expects { email, password }).
+ * @returns Object with trimmed email and password.
+ * @throws {BadRequestError} When email or password is missing or invalid.
+ */
+function validateUpdateBody(body: unknown): {
+  email: string;
+  password: string;
+} {
+  const parsed = body as { email?: unknown; password?: unknown } | undefined;
+  const email = parsed?.email;
+  const password = parsed?.password;
+
+  if (typeof email !== "string" || email.trim() === "") {
+    throw new BadRequestError("Email is required");
+  }
+  if (typeof password !== "string" || password.trim() === "") {
+    throw new BadRequestError("Password is required");
+  }
+  return { email: email.trim(), password: password.trim() };
+}
+
+/**
+ * Handles PUT /api/users: updates the authenticated user's email and password.
+ *
+ * Requires a valid JWT in the Authorization header. Expects { email, password }
+ * in the JSON body. Hashes the password, updates the user in the database, and
+ * returns 200 OK with the updated user resource (omitting hashed password).
+ *
+ * @param req - Express request (expects JSON body with email and password, Authorization: Bearer TOKEN).
+ * @param res - Express response.
+ * @returns Promise that resolves when the response is sent.
+ * @throws {UserNotAuthenticatedError} When JWT is missing, malformed, or invalid (401).
+ * @throws {BadRequestError} When email or password is missing or invalid.
+ * @throws {ConflictError} When the new email is already in use by another user.
+ * @throws {NotFoundError} When the authenticated user does not exist.
+ */
+export async function handlerUsersUpdate(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.api.jwtSecret);
+
+  const { email, password } = validateUpdateBody(req.body);
+
+  const existingUserWithEmail = await getUserByEmail(email);
+  if (existingUserWithEmail && existingUserWithEmail.id !== userId) {
+    throw new ConflictError("Email already in use");
+  }
+
+  const user = await getUserById(userId);
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+
+  const hashedPassword = await hashPassword(password);
+  const updated = await updateUserById(userId, { email, hashedPassword });
+  if (!updated) {
+    throw new NotFoundError("User not found");
+  }
+
+  const payload = toUserResponse(updated as User);
   respondWithJSON(res, 200, payload);
 }
