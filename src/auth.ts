@@ -1,4 +1,68 @@
 import * as argon2 from "argon2";
+import jwt from "jsonwebtoken";
+import type { JwtPayload } from "jsonwebtoken";
+
+import { UserNotAuthenticatedError } from "./api/errors.js";
+
+/**
+ * JWT issuer identifier for Chirpy tokens.
+ */
+const JWT_ISSUER = "chirpy";
+
+/**
+ * Payload shape for Chirpy JWT tokens.
+ *
+ * @property iss - Issuer of the token.
+ * @property sub - Subject (user ID).
+ * @property iat - Issued-at time (seconds since epoch).
+ * @property exp - Expiration time (seconds since epoch).
+ */
+type JwtPayloadShape = Pick<JwtPayload, "iss" | "sub" | "iat" | "exp">;
+
+/**
+ * Creates a signed JWT for the given user.
+ *
+ * @param userID - The user's unique identifier (stored in sub).
+ * @param expiresIn - Seconds until the token expires.
+ * @param secret - Signing secret.
+ * @returns The signed JWT string.
+ */
+export function makeJWT(
+  userID: string,
+  expiresIn: number,
+  secret: string,
+): string {
+  const iat = Math.floor(Date.now() / 1000);
+  const payload: JwtPayloadShape = {
+    iss: JWT_ISSUER,
+    sub: userID,
+    iat,
+    exp: iat + expiresIn,
+  };
+  return jwt.sign(payload, secret);
+}
+
+/**
+ * Validates a JWT and returns the user ID from its subject (sub).
+ *
+ * @param tokenString - The raw JWT string.
+ * @param secret - Signing secret used to verify the token.
+ * @returns The user ID (sub claim) if the token is valid.
+ * @throws {UserNotAuthenticatedError} When the token is invalid or expired.
+ */
+export function validateJWT(tokenString: string, secret: string): string {
+  try {
+    const decoded = jwt.verify(tokenString, secret) as JwtPayloadShape;
+    const sub = decoded.sub;
+    if (typeof sub !== "string" || !sub) {
+      throw new UserNotAuthenticatedError("Invalid token: missing user ID");
+    }
+    return sub;
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Invalid or expired token";
+    throw new UserNotAuthenticatedError(message);
+  }
+}
 
 /**
  * Hashes a plain-text password using Argon2id.
