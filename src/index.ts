@@ -7,7 +7,7 @@ import {
   handlerChirpsGet,
   handlerChirpsList,
 } from "./api/chirps.js";
-import { handlerUsersCreate } from "./api/users.js";
+import { handlerLogin, handlerUsersCreate } from "./api/users.js";
 import { config } from "./config.js";
 import { handlerMetrics } from "./api/metrics.js";
 import {
@@ -50,6 +50,7 @@ export function createApp(): express.Express {
   registerResetEndpoint(app);
   registerChirpsEndpoint(app);
   registerUsersEndpoint(app);
+  registerLoginEndpoint(app);
   app.use(errorMiddleWare);
   return app;
 }
@@ -133,6 +134,20 @@ function registerUsersEndpoint(app: express.Express): void {
   app.post(`${API_PREFIX}/users`, (req, res, next) => {
     Promise.resolve()
       .then(() => handlerUsersCreate(req, res))
+      .catch(next);
+  });
+}
+
+/**
+ * Registers the login endpoint.
+ *
+ * @param app - Express application instance.
+ * @returns void
+ */
+function registerLoginEndpoint(app: express.Express): void {
+  app.post(`${API_PREFIX}/login`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerLogin(req, res))
       .catch(next);
   });
 }
