@@ -25,6 +25,21 @@ export async function getUserById(id: string) {
 }
 
 /**
+ * Upgrades a user to Chirpy Red membership by ID.
+ *
+ * @param id - User UUID
+ * @returns The updated user row, or undefined if not found
+ */
+export async function upgradeUserToChirpyRed(id: string) {
+  const [result] = await db
+    .update(users)
+    .set({ isChirpyRed: true })
+    .where(eq(users.id, id))
+    .returning();
+  return result;
+}
+
+/**
  * Deletes all users from the database. Does not modify schema or tables.
  *
  * @returns Promise that resolves when deletion completes.
