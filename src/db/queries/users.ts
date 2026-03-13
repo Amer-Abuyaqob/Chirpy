@@ -3,6 +3,17 @@ import { db } from "../index.js";
 import { NewUser, users } from "../schema.js";
 
 /**
+ * Fetches a user by email address.
+ *
+ * @param email - User email address
+ * @returns The user row, or undefined if not found
+ */
+export async function getUserByEmail(email: string) {
+  const [result] = await db.select().from(users).where(eq(users.email, email));
+  return result;
+}
+
+/**
  * Fetches a user by UUID.
  *
  * @param id - User UUID
