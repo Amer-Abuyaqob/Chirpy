@@ -5,10 +5,15 @@ import postgres from "postgres";
 import { handlerRefresh, handlerRevoke } from "./api/auth.js";
 import {
   handlerChirpsCreate,
+  handlerChirpsDelete,
   handlerChirpsGet,
   handlerChirpsList,
 } from "./api/chirps.js";
-import { handlerLogin, handlerUsersCreate } from "./api/users.js";
+import {
+  handlerLogin,
+  handlerUsersCreate,
+  handlerUsersUpdate,
+} from "./api/users.js";
 import { config } from "./config.js";
 import { handlerMetrics } from "./api/metrics.js";
 import {
@@ -124,6 +129,11 @@ function registerChirpsEndpoint(app: express.Express): void {
       .then(() => handlerChirpsCreate(req, res))
       .catch(next);
   });
+  app.delete(`${API_PREFIX}/chirps/:chirpId`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerChirpsDelete(req, res))
+      .catch(next);
+  });
 }
 
 /**
@@ -136,6 +146,11 @@ function registerUsersEndpoint(app: express.Express): void {
   app.post(`${API_PREFIX}/users`, (req, res, next) => {
     Promise.resolve()
       .then(() => handlerUsersCreate(req, res))
+      .catch(next);
+  });
+  app.put(`${API_PREFIX}/users`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerUsersUpdate(req, res))
       .catch(next);
   });
 }
