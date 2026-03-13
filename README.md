@@ -29,7 +29,7 @@ An HTTP server built in TypeScript with Express.js. This project is part of the 
 - **JSON** – Parsing and sending JSON data
 - **Error Handling** – Error handling in TypeScript servers
 - **Storage** – PostgreSQL with Drizzle ORM; auto-migrations run at startup
-- **Authentication** – Password hashing (Argon2), login (`POST /api/login`); JWT tokens (Later)
+- **Authentication** – Password hashing (Argon2), login (`POST /api/login`); JWT creation/validation (`makeJWT`, `validateJWT`)
 - **Authorization** – (Later) Access control
 - **Webhooks** – (Later) HTTP webhooks
 - **Documentation** – API documentation
@@ -61,6 +61,9 @@ npm start
 
 # Dev (build + run)
 npm run dev
+
+# Run tests
+npm run test
 
 # DB migrations (CLI; app also runs migrations at startup)
 npm run db.generate   # Generate migration from schema changes
