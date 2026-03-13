@@ -37,15 +37,50 @@ export const chirps = pgTable("chirps", {
 });
 
 /**
+ * Refresh tokens table: stores refresh tokens for JWT renewal.
+ * Tokens are deleted when the owning user is deleted (ON DELETE CASCADE).
+ *
+ * @property token - Primary key; 256-bit hex-encoded string.
+ * @property createdAt - Timestamp; defaults to now if omitted.
+ * @property updatedAt - Timestamp; defaults to now, auto-updates on row change.
+ * @property userId - Reference to the user who owns the token.
+ * @property expiresAt - Timestamp when the token expires.
+ * @property revokedAt - Timestamp when the token was revoked; null if not revoked.
+ */
+export const refreshTokens = pgTable("refresh_tokens", {
+  token: text("token").primaryKey(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at").notNull(),
+  revokedAt: timestamp("revoked_at"),
+});
+
+/**
+ * Inferred type for inserting a new refresh token row.
+ *
+ * @property token - Required; 256-bit hex string (primary key).
+ * @property userId - Required; ID of the owning user.
+ * @property expiresAt - Required; token expiration timestamp.
+ * @property revokedAt - Optional; null when created, set when revoked.
+ */
+export type NewRefreshToken = typeof refreshTokens.$inferInsert;
+
+/**
  * Inferred type for a selected user row from the database.
  * Use for type safety when reading users (e.g. createUser return value).
-*
-* @property id - User UUID
-* @property createdAt - Creation timestamp
-* @property updatedAt - Last update timestamp
-* @property email - User email
-* @property hashedPassword - Argon2 hash (never expose in API responses)
-*/
+ *
+ * @property id - User UUID
+ * @property createdAt - Creation timestamp
+ * @property updatedAt - Last update timestamp
+ * @property email - User email
+ * @property hashedPassword - Argon2 hash (never expose in API responses)
+ */
 export type User = typeof users.$inferSelect;
 
 /**
