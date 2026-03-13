@@ -34,12 +34,14 @@ export type DBConfig = {
  * @property fileServerHits - Number of hits to the file server endpoint.
  * @property jwtSecret - Secret used to sign and verify JWTs.
  * @property platform - Environment platform (e.g. "dev" for local development).
+ * @property polkaKey - API key used to verify Polka webhook requests.
  * @property port - HTTP server port.
  */
 export type APIConfig = {
   fileServerHits: number;
   jwtSecret: string;
   platform: string;
+  polkaKey: string;
   port: number;
 };
 
@@ -62,6 +64,7 @@ export const config: Config = {
     fileServerHits: 0,
     jwtSecret: envOrThrow("JWT_SECRET"),
     platform: envOrThrow("PLATFORM"),
+    polkaKey: envOrThrow("POLKA_KEY"),
     port: Number(envOrThrow("PORT")),
   },
   db: {
