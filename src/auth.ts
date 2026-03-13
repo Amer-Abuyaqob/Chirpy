@@ -1,8 +1,35 @@
 import * as argon2 from "argon2";
+import type { Request } from "express";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "jsonwebtoken";
 
 import { UserNotAuthenticatedError } from "./api/errors.js";
+
+/**
+ * Extracts the Bearer token from the Authorization header.
+ *
+ * @param req - Express request (expects "Authorization: Bearer TOKEN_STRING").
+ * @returns The token string (without the "Bearer " prefix).
+ * @throws {UserNotAuthenticatedError} When the Authorization header is missing or malformed.
+ */
+export function getBearerToken(req: Request): string {
+  const authHeader = req.get("Authorization");
+  if (!authHeader || typeof authHeader !== "string") {
+    throw new UserNotAuthenticatedError("Authorization header is required");
+  }
+  const trimmed = authHeader.trim();
+  const prefix = "Bearer ";
+  if (!trimmed.toLowerCase().startsWith("bearer ")) {
+    throw new UserNotAuthenticatedError(
+      "Authorization header must be Bearer token",
+    );
+  }
+  const token = trimmed.slice(prefix.length).trim();
+  if (!token) {
+    throw new UserNotAuthenticatedError("Authorization token is empty");
+  }
+  return token;
+}
 
 /**
  * JWT issuer identifier for Chirpy tokens.

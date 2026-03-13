@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
+import type { Request } from "express";
 import {
+  getBearerToken,
   makeJWT,
   validateJWT,
   hashPassword,
@@ -24,6 +26,49 @@ describe("makeJWT and validateJWT", () => {
   it("should reject expired tokens", () => {
     const token = makeJWT(USER_ID, -1, SECRET);
     expect(() => validateJWT(token, SECRET)).toThrow();
+  });
+});
+
+describe("getBearerToken", () => {
+  it("returns the token when Authorization header has Bearer prefix", () => {
+    const req = {
+      get: (name: string) =>
+        name === "Authorization" ? "Bearer my-token-123" : undefined,
+    } as Request;
+    expect(getBearerToken(req)).toBe("my-token-123");
+  });
+
+  it("strips whitespace from token", () => {
+    const req = {
+      get: (name: string) =>
+        name === "Authorization" ? "Bearer   token-with-spaces  " : undefined,
+    } as Request;
+    expect(getBearerToken(req)).toBe("token-with-spaces");
+  });
+
+  it("throws when Authorization header is missing", () => {
+    const req = { get: (_: string) => undefined } as Request;
+    expect(() => getBearerToken(req)).toThrow(
+      "Authorization header is required",
+    );
+  });
+
+  it("throws when header does not start with Bearer", () => {
+    const req = {
+      get: (name: string) =>
+        name === "Authorization" ? "Basic xxx" : undefined,
+    } as Request;
+    expect(() => getBearerToken(req)).toThrow(
+      "Authorization header must be Bearer token",
+    );
+  });
+
+  it("throws when token is empty after Bearer prefix", () => {
+    const req = {
+      get: (name: string) =>
+        name === "Authorization" ? "Bearer  " : undefined,
+    } as Request;
+    expect(() => getBearerToken(req)).toThrow("Authorization token is empty");
   });
 });
 

@@ -1,4 +1,6 @@
 import type { Request, Response } from "express";
+import { getBearerToken, validateJWT } from "../auth.js";
+import { config } from "../config.js";
 import {
   createChirp,
   getChirpById,
@@ -95,24 +97,27 @@ function toChirpResponse(row: {
 /**
  * Handles POST /api/chirps: creates a chirp from the JSON body.
  *
- * Expects { body: string, userId: string }. Validates body (max 140 chars,
+ * Requires a valid JWT in the Authorization header. The user ID is extracted
+ * from the JWT. Expects { body: string }. Validates body (max 140 chars,
  * profanity cleaned), verifies user exists, then inserts chirp.
  * Returns 201 Created with the created chirp.
  *
- * @param req - Express request (expects JSON body with body and userId).
+ * @param req - Express request (expects JSON body with body, Authorization: Bearer TOKEN).
  * @param res - Express response.
  * @returns Promise that resolves when the response is sent.
- * @throws {BadRequestError} When body or userId are missing/invalid.
+ * @throws {UserNotAuthenticatedError} When JWT is missing or invalid.
+ * @throws {BadRequestError} When body is missing/invalid.
  * @throws {NotFoundError} When the user does not exist.
  */
 export async function handlerChirpsCreate(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const parsed = req.body as { body?: unknown; userId?: unknown } | undefined;
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.api.jwtSecret);
 
+  const parsed = req.body as { body?: unknown } | undefined;
   const body = validateAndCleanChirpBody(parsed?.body);
-  const userId = validateId(parsed?.userId, "UserId");
 
   const user = await getUserById(userId);
   if (!user) {

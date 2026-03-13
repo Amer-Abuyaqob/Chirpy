@@ -32,11 +32,13 @@ export type DBConfig = {
  * API configuration and in-memory metrics state.
  *
  * @property fileServerHits - Number of hits to the file server endpoint.
+ * @property jwtSecret - Secret used to sign and verify JWTs.
  * @property platform - Environment platform (e.g. "dev" for local development).
  * @property port - HTTP server port.
  */
 export type APIConfig = {
   fileServerHits: number;
+  jwtSecret: string;
   platform: string;
   port: number;
 };
@@ -58,6 +60,7 @@ export type Config = {
 export const config: Config = {
   api: {
     fileServerHits: 0,
+    jwtSecret: envOrThrow("JWT_SECRET"),
     platform: envOrThrow("PLATFORM"),
     port: Number(envOrThrow("PORT")),
   },
