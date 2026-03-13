@@ -1,4 +1,5 @@
 import * as argon2 from "argon2";
+import crypto from "node:crypto";
 import type { Request } from "express";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "jsonwebtoken";
@@ -89,6 +90,15 @@ export function validateJWT(tokenString: string, secret: string): string {
     const message = e instanceof Error ? e.message : "Invalid or expired token";
     throw new UserNotAuthenticatedError(message);
   }
+}
+
+/**
+ * Generates a cryptographically secure 256-bit (32-byte) hex-encoded refresh token.
+ *
+ * @returns A 64-character hex string (32 bytes).
+ */
+export function makeRefreshToken(): string {
+  return crypto.randomBytes(32).toString("hex");
 }
 
 /**

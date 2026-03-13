@@ -1,6 +1,12 @@
 import type { Request, Response } from "express";
-import { checkPasswordHash, hashPassword, makeJWT } from "../auth.js";
+import {
+  checkPasswordHash,
+  hashPassword,
+  makeJWT,
+  makeRefreshToken,
+} from "../auth.js";
 import { config } from "../config.js";
+import { createRefreshToken } from "../db/queries/refresh-tokens.js";
 import { createUser, getUserByEmail } from "../db/queries/users.js";
 import type { User } from "../db/schema.js";
 import {
@@ -10,11 +16,11 @@ import {
 } from "./errors.js";
 import { respondWithJSON } from "./json.js";
 
-/** Default token expiration in seconds (1 hour). */
-const DEFAULT_EXPIRES_IN_SECONDS = 3600;
+/** Access token expiration in seconds (1 hour). */
+const ACCESS_TOKEN_EXPIRES_IN_SECONDS = 3600;
 
-/** Maximum allowed token expiration in seconds (1 hour). */
-const MAX_EXPIRES_IN_SECONDS = 3600;
+/** Refresh token validity in milliseconds (60 days). */
+const REFRESH_TOKEN_VALIDITY_MS = 60 * 24 * 60 * 60 * 1000;
 
 /**
  * API response shape for a created user.
@@ -31,15 +37,16 @@ type UserResponse = Omit<User, "hashedPassword" | "createdAt" | "updatedAt"> & {
 };
 
 /**
- * API response shape for login (user + token).
+ * API response shape for login (user + access token + refresh token).
  *
  * @property id - User UUID
  * @property email - User email address
  * @property createdAt - ISO 8601 timestamp
  * @property updatedAt - ISO 8601 timestamp
- * @property token - JWT token for authenticated requests
+ * @property token - JWT access token for authenticated requests
+ * @property refreshToken - Refresh token for obtaining new access tokens
  */
-type LoginResponse = UserResponse & { token: string };
+type LoginResponse = UserResponse & { token: string; refreshToken: string };
 
 /**
  * Maps a database user row to the API response format.
@@ -104,42 +111,14 @@ export async function handlerUsersCreate(
 const LOGIN_UNAUTHORIZED_MESSAGE = "incorrect email or password";
 
 /**
- * Resolves token expiration seconds from optional client value.
- * Defaults to 1 hour; caps at 1 hour if client specifies more.
- *
- * @param raw - Raw expiresInSeconds from request body (optional).
- * @returns Effective expiration in seconds.
- */
-function resolveExpiresInSeconds(raw: unknown): number {
-  if (raw === undefined || raw === null) {
-    return DEFAULT_EXPIRES_IN_SECONDS;
-  }
-  const num = Number(raw);
-  if (!Number.isFinite(num) || num <= 0) {
-    return DEFAULT_EXPIRES_IN_SECONDS;
-  }
-  return Math.min(Math.floor(num), MAX_EXPIRES_IN_SECONDS);
-}
-
-/**
- * Validates login body and returns normalized email, password, and optional expiresInSeconds.
+ * Validates login body and returns normalized email and password.
  *
  * @param body - Raw request body (expects { email, password }).
  * @returns Object with trimmed email and password.
  * @throws {BadRequestError} When email or password is missing or invalid.
  */
-function validateLoginBody(body: unknown): {
-  email: string;
-  password: string;
-  expiresInSeconds: number;
-} {
-  const parsed = body as
-    | {
-        email?: unknown;
-        password?: unknown;
-        expiresInSeconds?: unknown;
-      }
-    | undefined;
+function validateLoginBody(body: unknown): { email: string; password: string } {
+  const parsed = body as { email?: unknown; password?: unknown } | undefined;
   const email = parsed?.email;
   const password = parsed?.password;
 
@@ -149,8 +128,7 @@ function validateLoginBody(body: unknown): {
   if (typeof password !== "string") {
     throw new BadRequestError("Password is required");
   }
-  const expiresInSeconds = resolveExpiresInSeconds(parsed?.expiresInSeconds);
-  return { email: email.trim(), password, expiresInSeconds };
+  return { email: email.trim(), password };
 }
 
 /**
@@ -186,21 +164,36 @@ async function authenticateUser(
 /**
  * Handles POST /api/login: authenticates a user by email and password.
  *
- * Expects { email: string, password: string, expiresInSeconds?: number }.
- * Returns 200 OK with user resource (without hashedPassword) plus token.
- * If expiresInSeconds is specified, uses it (capped at 1 hour); otherwise defaults to 1 hour.
+ * Expects { email: string, password: string }.
+ * Returns 200 OK with user resource (without hashedPassword) plus access token
+ * and refresh token. Access tokens expire in 1 hour; refresh tokens in 60 days.
  *
  * @param req - Express request (expects JSON body with "email" and "password").
  * @param res - Express response.
  * @returns Promise that resolves when the response is sent.
  */
 export async function handlerLogin(req: Request, res: Response): Promise<void> {
-  const { email, password, expiresInSeconds } = validateLoginBody(req.body);
+  const { email, password } = validateLoginBody(req.body);
   const user = await authenticateUser(email, password);
-  const token = makeJWT(user.id, expiresInSeconds, config.api.jwtSecret);
+
+  const accessToken = makeJWT(
+    user.id,
+    ACCESS_TOKEN_EXPIRES_IN_SECONDS,
+    config.api.jwtSecret,
+  );
+
+  const refreshToken = makeRefreshToken();
+  const expiresAt = new Date(Date.now() + REFRESH_TOKEN_VALIDITY_MS);
+  await createRefreshToken({
+    token: refreshToken,
+    userId: user.id,
+    expiresAt,
+  });
+
   const payload: LoginResponse = {
     ...toUserResponse(user),
-    token,
+    token: accessToken,
+    refreshToken,
   };
   respondWithJSON(res, 200, payload);
 }
