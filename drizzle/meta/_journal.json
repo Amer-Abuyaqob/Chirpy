@@ -15,6 +15,13 @@
       "when": 1773348802940,
       "tag": "0001_sharp_dexter_bennett",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773360898199,
+      "tag": "0002_wild_mephisto",
+      "breakpoints": true
     }
   ]
 }
