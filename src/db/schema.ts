@@ -1,4 +1,11 @@
-import { pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -11,6 +18,7 @@ export const users = pgTable("users", {
   hashedPassword: varchar("hashed_password", { length: 512 })
     .notNull()
     .default("unset"),
+  isChirpyRed: boolean("is_chirpy_red").notNull().default(false),
 });
 
 /**
@@ -80,6 +88,7 @@ export type NewRefreshToken = typeof refreshTokens.$inferInsert;
  * @property updatedAt - Last update timestamp
  * @property email - User email
  * @property hashedPassword - Argon2 hash (never expose in API responses)
+ * @property isChirpyRed - Whether the user has Chirpy Red membership
  */
 export type User = typeof users.$inferSelect;
 
