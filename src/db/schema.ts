@@ -8,6 +8,9 @@ export const users = pgTable("users", {
     .defaultNow()
     .$onUpdate(() => new Date()),
   email: varchar("email", { length: 256 }).unique().notNull(),
+  hashedPassword: varchar("hashed_password", { length: 512 })
+    .notNull()
+    .default("unset"),
 });
 
 /**
@@ -34,6 +37,18 @@ export const chirps = pgTable("chirps", {
 });
 
 /**
+ * Inferred type for a selected user row from the database.
+ * Use for type safety when reading users (e.g. createUser return value).
+*
+* @property id - User UUID
+* @property createdAt - Creation timestamp
+* @property updatedAt - Last update timestamp
+* @property email - User email
+* @property hashedPassword - Argon2 hash (never expose in API responses)
+*/
+export type User = typeof users.$inferSelect;
+
+/**
  * Inferred type for inserting a new user row.
  * Use for type safety when calling insert() on the users table.
  *
@@ -41,6 +56,7 @@ export const chirps = pgTable("chirps", {
  * @property createdAt - Optional; defaults to now if omitted.
  * @property updatedAt - Optional; defaults to now, auto-updates on row change.
  * @property email - Required; unique email address.
+ * @property hashedPassword - Optional; defaults to "unset" for existing users.
  */
 export type NewUser = typeof users.$inferInsert;
 
