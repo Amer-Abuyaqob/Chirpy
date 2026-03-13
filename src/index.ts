@@ -2,6 +2,7 @@ import express from "express";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
+import { handlerRefresh, handlerRevoke } from "./api/auth.js";
 import {
   handlerChirpsCreate,
   handlerChirpsGet,
@@ -51,6 +52,7 @@ export function createApp(): express.Express {
   registerChirpsEndpoint(app);
   registerUsersEndpoint(app);
   registerLoginEndpoint(app);
+  registerAuthEndpoints(app);
   app.use(errorMiddleWare);
   return app;
 }
@@ -148,6 +150,25 @@ function registerLoginEndpoint(app: express.Express): void {
   app.post(`${API_PREFIX}/login`, (req, res, next) => {
     Promise.resolve()
       .then(() => handlerLogin(req, res))
+      .catch(next);
+  });
+}
+
+/**
+ * Registers the auth endpoints (refresh and revoke).
+ *
+ * @param app - Express application instance.
+ * @returns void
+ */
+function registerAuthEndpoints(app: express.Express): void {
+  app.post(`${API_PREFIX}/refresh`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerRefresh(req, res))
+      .catch(next);
+  });
+  app.post(`${API_PREFIX}/revoke`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerRevoke(req, res))
       .catch(next);
   });
 }
