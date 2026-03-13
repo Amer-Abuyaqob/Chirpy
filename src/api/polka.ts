@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 import { upgradeUserToChirpyRed } from "../db/queries/users.js";
+import { config } from "../config.js";
+import { getAPIKey } from "../auth.js";
 import { BadRequestError, NotFoundError } from "./errors.js";
 
 /** Polka webhook event for user upgrade. */
@@ -49,6 +51,12 @@ export async function handlerPolkaWebhooks(
   req: Request,
   res: Response,
 ): Promise<void> {
+  const apiKey = getAPIKey(req);
+  if (!apiKey || apiKey !== config.api.polkaKey) {
+    res.status(401).send();
+    return;
+  }
+
   const body = req.body as PolkaWebhookBody | undefined;
   const event = body?.event;
 
