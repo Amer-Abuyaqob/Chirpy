@@ -5,6 +5,7 @@ import postgres from "postgres";
 import { handlerRefresh, handlerRevoke } from "./api/auth.js";
 import {
   handlerChirpsCreate,
+  handlerChirpsDelete,
   handlerChirpsGet,
   handlerChirpsList,
 } from "./api/chirps.js";
@@ -126,6 +127,11 @@ function registerChirpsEndpoint(app: express.Express): void {
   app.post(`${API_PREFIX}/chirps`, (req, res, next) => {
     Promise.resolve()
       .then(() => handlerChirpsCreate(req, res))
+      .catch(next);
+  });
+  app.delete(`${API_PREFIX}/chirps/:chirpId`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerChirpsDelete(req, res))
       .catch(next);
   });
 }
