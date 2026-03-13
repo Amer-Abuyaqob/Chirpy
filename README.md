@@ -28,7 +28,7 @@ An HTTP server built in TypeScript with Express.js. This project is part of the 
 - **Architecture** – Structured server design
 - **JSON** – Parsing and sending JSON data
 - **Error Handling** – Error handling in TypeScript servers
-- **Storage** – PostgreSQL with Drizzle ORM; auto-migrations run at startup
+- **Storage** – PostgreSQL with Drizzle ORM; auto-migrations run at startup; `refresh_tokens` table for token rotation
 - **Authentication** – Password hashing (Argon2); login returns JWT + refresh token; `getBearerToken`, `makeJWT`, `makeRefreshToken`, `validateJWT`; `POST /api/refresh` and `POST /api/revoke` for refresh token rotation; `JWT_SECRET` in env for signing/verifying
 - **Authorization** – (Later) Access control
 - **Webhooks** – (Later) HTTP webhooks
@@ -79,3 +79,7 @@ The server runs migrations at startup, then listens on `PORT`, serves static fil
 ## Documentation
 
 For full project description, architecture, and course outline, see **[PROJECT_DESC.md](PROJECT_DESC.md)**.
+
+---
+
+_Last updated: March 2025 — Refresh token support added; login returns access + refresh tokens; `/api/refresh` and `/api/revoke` for token rotation._
