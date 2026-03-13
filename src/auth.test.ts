@@ -3,6 +3,7 @@ import type { Request } from "express";
 import {
   getBearerToken,
   makeJWT,
+  makeRefreshToken,
   validateJWT,
   hashPassword,
   checkPasswordHash,
@@ -26,6 +27,22 @@ describe("makeJWT and validateJWT", () => {
   it("should reject expired tokens", () => {
     const token = makeJWT(USER_ID, -1, SECRET);
     expect(() => validateJWT(token, SECRET)).toThrow();
+  });
+});
+
+describe("makeRefreshToken", () => {
+  const HEX_REGEX = /^[0-9a-f]+$/;
+
+  it("returns a 64-character hex string (256 bits)", () => {
+    const token = makeRefreshToken();
+    expect(token).toHaveLength(64);
+    expect(token).toMatch(HEX_REGEX);
+  });
+
+  it("returns unique tokens on each call", () => {
+    const a = makeRefreshToken();
+    const b = makeRefreshToken();
+    expect(a).not.toBe(b);
   });
 });
 
