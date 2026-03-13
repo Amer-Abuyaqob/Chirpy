@@ -70,7 +70,7 @@ npm run db.generate   # Generate migration from schema changes
 npm run db.migrate    # Apply migrations via drizzle-kit
 ```
 
-**Environment variables:** `DB_URL` (PostgreSQL connection string), `PORT` (HTTP port), and `PLATFORM` (e.g. `dev` for local; required for reset to run) are required. Set them in `.env` or your environment.
+**Environment variables:** `DB_URL` (PostgreSQL connection string), `JWT_SECRET` (secret for signing/verifying JWTs; generate with `openssl rand -base64 64`), `PORT` (HTTP port), and `PLATFORM` (e.g. `dev` for local; required for reset to run) are required. Set them in `.env` or your environment. **Do not commit `.env`** — it is gitignored.
 
 The server runs migrations at startup, then listens on `PORT`, serves static files at `/app`, exposes readiness at `GET /api/healthz`, metrics at `GET /admin/metrics`, reset at `POST /admin/reset`, users at `POST /api/users`, login at `POST /api/login`, and chirps at `GET /api/chirps`, `GET /api/chirps/:chirpId`, and `POST /api/chirps`.
 
