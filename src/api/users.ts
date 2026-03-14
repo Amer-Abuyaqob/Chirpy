@@ -36,6 +36,7 @@ const REFRESH_TOKEN_VALIDITY_MS = 60 * 24 * 60 * 60 * 1000;
  *
  * @property id - User UUID
  * @property email - User email address
+ * @property isChirpyRed - Whether the user has Chirpy Red membership
  * @property createdAt - ISO 8601 timestamp
  * @property updatedAt - ISO 8601 timestamp
  */
@@ -67,6 +68,7 @@ function toUserResponse(row: User): UserResponse {
   return {
     id: row.id,
     email: row.email,
+    isChirpyRed: row.isChirpyRed,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

@@ -7,6 +7,32 @@ import type { JwtPayload } from "jsonwebtoken";
 import { UserNotAuthenticatedError } from "./api/errors.js";
 
 /**
+ * Extracts the API key from the Authorization header.
+ *
+ * Expects format: "Authorization: ApiKey THE_KEY_HERE".
+ * Strips the "ApiKey" prefix and surrounding whitespace.
+ *
+ * @param req - Express request (expects "Authorization: ApiKey KEY_STRING").
+ * @returns The raw API key string, or null if the header is missing or malformed.
+ *
+ * @example
+ * getAPIKey(req) // "f271c81ff7084ee5b99a5091b42d486e" for "ApiKey f271c81ff7084ee5b99a5091b42d486e"
+ */
+export function getAPIKey(req: Request): string | null {
+  const authHeader = req.get("Authorization");
+  if (!authHeader || typeof authHeader !== "string") {
+    return null;
+  }
+  const trimmed = authHeader.trim();
+  const prefix = "ApiKey ";
+  if (!trimmed.toLowerCase().startsWith("apikey ")) {
+    return null;
+  }
+  const key = trimmed.slice(prefix.length).trim();
+  return key || null;
+}
+
+/**
  * Extracts the Bearer token from the Authorization header.
  *
  * @param req - Express request (expects "Authorization: Bearer TOKEN_STRING").

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import type { Request } from "express";
 import {
+  getAPIKey,
   getBearerToken,
   makeJWT,
   makeRefreshToken,
@@ -86,6 +87,47 @@ describe("getBearerToken", () => {
         name === "Authorization" ? "Bearer  " : undefined,
     } as Request;
     expect(() => getBearerToken(req)).toThrow("Authorization token is empty");
+  });
+});
+
+describe("getAPIKey", () => {
+  it("returns the key when Authorization header has ApiKey prefix", () => {
+    const req = {
+      get: (name: string) =>
+        name === "Authorization"
+          ? "ApiKey f271c81ff7084ee5b99a5091b42d486e"
+          : undefined,
+    } as Request;
+    expect(getAPIKey(req)).toBe("f271c81ff7084ee5b99a5091b42d486e");
+  });
+
+  it("strips whitespace from the key", () => {
+    const req = {
+      get: (name: string) =>
+        name === "Authorization" ? "ApiKey   my-key-123  " : undefined,
+    } as Request;
+    expect(getAPIKey(req)).toBe("my-key-123");
+  });
+
+  it("returns null when Authorization header is missing", () => {
+    const req = { get: (_: string) => undefined } as Request;
+    expect(getAPIKey(req)).toBeNull();
+  });
+
+  it("returns null when header does not start with ApiKey", () => {
+    const req = {
+      get: (name: string) =>
+        name === "Authorization" ? "Bearer xxx" : undefined,
+    } as Request;
+    expect(getAPIKey(req)).toBeNull();
+  });
+
+  it("returns null when key is empty after ApiKey prefix", () => {
+    const req = {
+      get: (name: string) =>
+        name === "Authorization" ? "ApiKey  " : undefined,
+    } as Request;
+    expect(getAPIKey(req)).toBeNull();
   });
 });
 

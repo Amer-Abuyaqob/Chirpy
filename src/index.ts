@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 import { handlerRefresh, handlerRevoke } from "./api/auth.js";
+import { handlerPolkaWebhooks } from "./api/polka.js";
 import {
   handlerChirpsCreate,
   handlerChirpsDelete,
@@ -58,6 +59,7 @@ export function createApp(): express.Express {
   registerUsersEndpoint(app);
   registerLoginEndpoint(app);
   registerAuthEndpoints(app);
+  registerPolkaWebhooks(app);
   app.use(errorMiddleWare);
   return app;
 }
@@ -165,6 +167,20 @@ function registerLoginEndpoint(app: express.Express): void {
   app.post(`${API_PREFIX}/login`, (req, res, next) => {
     Promise.resolve()
       .then(() => handlerLogin(req, res))
+      .catch(next);
+  });
+}
+
+/**
+ * Registers the Polka payment webhooks endpoint.
+ *
+ * @param app - Express application instance.
+ * @returns void
+ */
+function registerPolkaWebhooks(app: express.Express): void {
+  app.post(`${API_PREFIX}/polka/webhooks`, (req, res, next) => {
+    Promise.resolve()
+      .then(() => handlerPolkaWebhooks(req, res))
       .catch(next);
   });
 }
