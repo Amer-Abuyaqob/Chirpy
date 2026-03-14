@@ -18,11 +18,20 @@ export async function getChirpById(id: string) {
 }
 
 /**
- * Retrieves all chirps from the database in ascending order by createdAt.
+ * Retrieves chirps from the database in ascending order by createdAt.
+ * When authorId is provided, only chirps by that author are returned.
  *
- * @returns Array of all chirp rows, oldest first.
+ * @param authorId - Optional author (user) ID to filter by.
+ * @returns Array of chirp rows, oldest first.
  */
-export async function getAllChirps() {
+export async function getAllChirps(authorId?: string) {
+  if (authorId !== undefined) {
+    return db
+      .select()
+      .from(chirps)
+      .where(eq(chirps.userId, authorId))
+      .orderBy(asc(chirps.createdAt));
+  }
   return db.select().from(chirps).orderBy(asc(chirps.createdAt));
 }
 
