@@ -104,14 +104,6 @@ npm run db.migrate  # Apply migrations
 - [Project overview](docs/PROJECT_DESC.md) — Architecture, workspace map
 - [API reference](docs/API.md) — Full endpoint docs with schemas
 
-## Stability
-
-The API is in active use as a learning project. Schema and endpoints are stable; minor changes may occur as the Boot.dev course evolves.
-
-## Dependencies
-
-Core: Express, Drizzle ORM, postgres, argon2, jsonwebtoken. Dev: TypeScript, Vitest, drizzle-kit. See [package.json](package.json).
-
 ## 👏 Contributing
 
 Contributions are welcome! Fork the repo, open a pull request, and ensure tests pass (`npm run test`). Submit PRs to the `main` branch.
