@@ -3,11 +3,16 @@ import { getBearerToken, validateJWT } from "../auth.js";
 import { config } from "../config.js";
 import {
   createChirp,
+  deleteChirpById,
   getChirpById,
   getAllChirps,
 } from "../db/queries/chirps.js";
 import { getUserById } from "../db/queries/users.js";
-import { BadRequestError, NotFoundError } from "./errors.js";
+import {
+  BadRequestError,
+  NotFoundError,
+  UserForbiddenError,
+} from "./errors.js";
 import { respondWithJSON } from "./json.js";
 
 /** Maximum allowed chirp length (in characters). */
@@ -149,6 +154,39 @@ export async function handlerChirpsGet(
 
   const payload = toChirpResponse(chirp);
   respondWithJSON(res, 200, payload);
+}
+
+/**
+ * Handles DELETE /api/chirps/:chirpId: deletes a chirp by ID.
+ *
+ * Requires a valid JWT in the Authorization header. Only the chirp author may
+ * delete. Returns 404 if chirp not found, 403 if the user is not the author.
+ *
+ * @param req - Express request (chirpId from path params, Authorization: Bearer TOKEN).
+ * @param res - Express response.
+ * @returns Promise that resolves when the response is sent.
+ * @throws {UserNotAuthenticatedError} When JWT is missing or invalid.
+ * @throws {NotFoundError} When the chirp does not exist.
+ * @throws {UserForbiddenError} When the user is not the author of the chirp.
+ */
+export async function handlerChirpsDelete(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const token = getBearerToken(req);
+  const userId = validateJWT(token, config.api.jwtSecret);
+
+  const chirpId = validateId(req.params.chirpId, "Chirp ID");
+  const chirp = await getChirpById(chirpId);
+  if (!chirp) {
+    throw new NotFoundError("Chirp not found");
+  }
+  if (chirp.userId !== userId) {
+    throw new UserForbiddenError("You may only delete your own chirps");
+  }
+
+  await deleteChirpById(chirpId);
+  res.status(204).send();
 }
 
 /**

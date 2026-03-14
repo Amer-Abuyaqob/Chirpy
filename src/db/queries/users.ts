@@ -62,3 +62,22 @@ export async function createUser(user: NewUser) {
     .returning();
   return result;
 }
+
+/**
+ * Updates a user's email and hashed password by ID.
+ *
+ * @param id - User UUID to update.
+ * @param data - Object with email and hashedPassword.
+ * @returns The updated user row, or undefined if user not found.
+ */
+export async function updateUserById(
+  id: string,
+  data: { email: string; hashedPassword: string },
+) {
+  const [result] = await db
+    .update(users)
+    .set({ email: data.email, hashedPassword: data.hashedPassword })
+    .where(eq(users.id, id))
+    .returning();
+  return result;
+}

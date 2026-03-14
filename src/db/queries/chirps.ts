@@ -9,7 +9,11 @@ import { NewChirp, chirps } from "../schema.js";
  * @returns The chirp row if found, otherwise undefined.
  */
 export async function getChirpById(id: string) {
-  const [row] = await db.select().from(chirps).where(eq(chirps.id, id)).limit(1);
+  const [row] = await db
+    .select()
+    .from(chirps)
+    .where(eq(chirps.id, id))
+    .limit(1);
   return row;
 }
 
@@ -20,6 +24,16 @@ export async function getChirpById(id: string) {
  */
 export async function getAllChirps() {
   return db.select().from(chirps).orderBy(asc(chirps.createdAt));
+}
+
+/**
+ * Deletes a single chirp by ID.
+ *
+ * @param id - Chirp UUID.
+ * @returns Promise that resolves when deletion completes.
+ */
+export async function deleteChirpById(id: string): Promise<void> {
+  await db.delete(chirps).where(eq(chirps.id, id));
 }
 
 /**
