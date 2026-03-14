@@ -58,6 +58,28 @@ function validateAndCleanChirpBody(body: unknown): string {
 }
 
 /**
+ * Parses the optional authorId query parameter for GET /api/chirps.
+ * Returns undefined when not provided or empty; otherwise returns trimmed string.
+ *
+ * @param value - Raw value from req.query.authorId.
+ * @returns Trimmed authorId string, or undefined if not provided/empty.
+ * @throws {BadRequestError} When value is present but not a valid non-empty string.
+ */
+function parseOptionalAuthorId(value: unknown): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  const raw =
+    typeof value === "string"
+      ? value
+      : Array.isArray(value)
+        ? value[0]
+        : undefined;
+  if (raw === undefined) return undefined;
+  const trimmed = (typeof raw === "string" ? raw : String(raw)).trim();
+  if (trimmed === "") return undefined;
+  return trimmed;
+}
+
+/**
  * Validates an ID value (e.g. userId, chirpId) and ensures it's a non-empty string.
  * Handles Express params that may be string or string[].
  *
@@ -190,17 +212,19 @@ export async function handlerChirpsDelete(
 }
 
 /**
- * Handles GET /api/chirps: returns all chirps in ascending order by createdAt.
+ * Handles GET /api/chirps: returns chirps in ascending order by createdAt.
+ * Accepts optional query param authorId to filter by author.
  *
- * @param _req - Express request (unused).
+ * @param req - Express request (optional authorId in query).
  * @param res - Express response.
  * @returns Promise that resolves when the response is sent.
  */
 export async function handlerChirpsList(
-  _req: Request,
+  req: Request,
   res: Response,
 ): Promise<void> {
-  const rows = await getAllChirps();
+  const authorId = parseOptionalAuthorId(req.query.authorId);
+  const rows = await getAllChirps(authorId);
   const payload = rows.map(toChirpResponse);
   respondWithJSON(res, 200, payload);
 }
