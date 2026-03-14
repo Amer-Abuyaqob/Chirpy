@@ -57,6 +57,30 @@ function validateAndCleanChirpBody(body: unknown): string {
   return cleanProfanity(body);
 }
 
+/** Valid sort directions for chirps list. */
+type SortDirection = "asc" | "desc";
+
+/**
+ * Parses the optional sort query parameter for GET /api/chirps.
+ * Accepts "asc" or "desc"; defaults to "asc" when missing or invalid.
+ *
+ * @param value - Raw value from req.query.sort.
+ * @returns Sort direction ("asc" | "desc").
+ */
+function parseSortParam(value: unknown): SortDirection {
+  const raw =
+    typeof value === "string"
+      ? value
+      : Array.isArray(value)
+        ? value[0]
+        : undefined;
+  const trimmed = (typeof raw === "string" ? raw : String(raw ?? ""))
+    .trim()
+    .toLowerCase();
+  if (trimmed === "desc") return "desc";
+  return "asc";
+}
+
 /**
  * Parses the optional authorId query parameter for GET /api/chirps.
  * Returns undefined when not provided or empty; otherwise returns trimmed string.
@@ -97,6 +121,23 @@ function validateId(id: unknown, label: string): string {
     );
   }
   return raw.trim();
+}
+
+/**
+ * Sorts chirps in-place by createdAt in the given direction.
+ * ISO strings sort correctly for date comparison.
+ *
+ * @param chirps - Array of chirp response objects.
+ * @param direction - "asc" for oldest first, "desc" for newest first.
+ */
+function sortChirpsByCreatedAt<T extends { createdAt: string }>(
+  chirps: T[],
+  direction: SortDirection,
+): void {
+  chirps.sort((a, b) => {
+    const cmp = a.createdAt.localeCompare(b.createdAt);
+    return direction === "asc" ? cmp : -cmp;
+  });
 }
 
 /**
@@ -212,10 +253,10 @@ export async function handlerChirpsDelete(
 }
 
 /**
- * Handles GET /api/chirps: returns chirps in ascending order by createdAt.
- * Accepts optional query param authorId to filter by author.
+ * Handles GET /api/chirps: returns chirps sorted by createdAt.
+ * Accepts optional query params: authorId (filter by author), sort (asc|desc, default asc).
  *
- * @param req - Express request (optional authorId in query).
+ * @param req - Express request (optional authorId, sort in query).
  * @param res - Express response.
  * @returns Promise that resolves when the response is sent.
  */
@@ -224,7 +265,9 @@ export async function handlerChirpsList(
   res: Response,
 ): Promise<void> {
   const authorId = parseOptionalAuthorId(req.query.authorId);
+  const sort = parseSortParam(req.query.sort);
   const rows = await getAllChirps(authorId);
   const payload = rows.map(toChirpResponse);
+  sortChirpsByCreatedAt(payload, sort);
   respondWithJSON(res, 200, payload);
 }
